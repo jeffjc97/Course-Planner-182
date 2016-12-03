@@ -2,7 +2,7 @@ from Constraint import *
 
 class ScheduleGenerator():
     # TODO PREFERENCES!!
-    def __init__(self):
+    def __init__(self,classes):
         self.assignment = [None for _ in xrange(48)]
 
         # {
@@ -17,6 +17,8 @@ class ScheduleGenerator():
         # }
         self.constraints = [NumCoursesConstraint()]
         self.populate_constraints()
+        self.variable_domains = [set() for _ in xrange(48)]
+        self.classes = classes
 
     # Year = [0,1,2,3]; Semester = {0:fall, 1:spring}; Slot=[0,1,2,3,4,5]
     def get_course(year, semester, slot):
@@ -28,11 +30,17 @@ class ScheduleGenerator():
     def populate_constraints(self):
         return
 
-    def validate(self):
+    def validate(self, new_assignment = None):
+        assignment = new_assignment if new_assignment else self.assignment
         for constraint in self.constraints:
-            if not constraint.validate(self.assignment):
+            if not constraint.validate(assignment):
                 return False
         return True
+
+    def try_validate(self, slot, value):
+        new_assignment = list(self.assignment)
+        new_assignment[slot] = value
+        return self.validate(new_assignment)
 
     def select_unassigned(self):
         for year in xrange(4):
@@ -47,9 +55,40 @@ class ScheduleGenerator():
                         return get_course_index(year, semester, slot)
         return None
 
+
+    def get_slots(self,semester):
+        slots = []
+        for year in range(4):
+            for slot in range(6):
+                slots.append(self.get_course_index(year, semester, slot))
+        return slots
+
+    def init_domains(self):
+        for course in self.classes:
+            if course["fall"]:
+                for slot in self.get_slots(0):
+                    self.variable_domains[slot].add(course)
+            if course["spring"]:
+                for slot in self.get_slots(1):
+                    self.variable_domains[slot].add(course)
+
+    def ac3(self):
+
+        return False
+
     def backtrack(self):
         if self.validate():
             return self.assignment
-        course_index = self.select_unassigned()
-        
-
+        slot_index = self.select_unassigned()
+        slot_domain = self.variable_domains[slot_index]
+        curr_assignment = list(self.assignment)
+        for value in slot_domain:
+            if self.try_validate(slot_index, value):
+                self.assignment[slot_index] = value
+                # AC3
+                if self.ac3:
+                    result = self.backtrack()
+                    if result:
+                        return result
+            self.assignment = curr_assignment
+        return False

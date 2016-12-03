@@ -4,4 +4,5 @@ import helpers
 
 # dictionary containing all information about courses
 class_dict = helpers.parse_csv()
-print class_dict
+sg = ScheduleGenerator(class_dict)
+print sg.backtrack()

@@ -1,5 +1,6 @@
 import csv
 
+# creates dictionary containing all information about courses
 def parse_csv():
     class_dict = {}
     # read in CSV file with all course info
@@ -8,14 +9,19 @@ def parse_csv():
         next(csvreader, None)
         for line in csvreader:
             class_dict[line[0]] = {
-                'fall': bool(line[1]),
-                'spring': bool(line[2]),
-                'mon': bool(line[3]),
-                'tues': bool(line[4]),
-                'wed': bool(line[5]),
-                'thurs': bool(line[6]),
-                'fri': bool(line[7]),
-                'start_time': float(line[8]),
-                'end_time': float(line[9])
+                'semester': [bool(line[1]), bool(line[2])],
+                'days': [bool(line[3]), bool(line[4]), bool(line[5]), bool(line[6]), bool(line[7])],
+                'times': [float(line[8]), float(line[9])]
             }
     return class_dict
+
+def get_slot_from_index(index):
+    year = index / 12
+    semester = int(index % 12 >= 6)
+    slot = index % 6
+    return {
+        'year': year,
+        'semester': semester,
+        'slot': slot
+    }
+

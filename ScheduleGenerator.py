@@ -1,4 +1,5 @@
 from constraint import *
+from collections import deque
 
 class ScheduleGenerator():
     # TODO PREFERENCES!!
@@ -28,10 +29,10 @@ class ScheduleGenerator():
     # initialize domains to all of the classes that meet during the slot's semeste
     def init_domains(self):
         for course in self.classes:
-            if self.classes[course]["fall"]:
+            if self.classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
                     self.variable_domains[slot].add(course)
-            if self.classes[course]["spring"]:
+            if self.classes[course]["semester"][1]:
                 for slot in self.get_semester_slots(1):
                     self.variable_domains[slot].add(course)
 
@@ -41,8 +42,15 @@ class ScheduleGenerator():
     def validate(self, new_assignment = None):
         assignment = new_assignment if new_assignment else self.assignment
         for constraint in self.constraints:
-            if not constraint.validate(assignment):
-                return False
+            if constraint.constraint_type == ConstraintType.BinaryConstraint:
+                for x in range(48):
+                    for y in range(48):
+                        if x != y:
+                            if not constraint.validate(x, y, assignment):
+                                return False
+            else:
+                if not constraint.validate(assignment):
+                    return False
         return True
 
     # makes a change to assignment and validates that new assignment
@@ -75,8 +83,31 @@ class ScheduleGenerator():
                 slots.append(self.get_course_index(year, semester, slot))
         return slots
 
+    def revise(self, i, j):
+        revised = False
+        for x in self.variable_domains[i]:
+            for y in self.variable_domains[j]:
+                for c in self.constraints:
+                    if c.constraint_type = ConstraintType.BinaryConstraint:
+
+        return revised
+
     def ac3(self):
-        return False
+        queue = deque()
+        # populating all arcs
+        for x in range(48):
+            for y in range(48):
+                if x != y:
+                    queue.append((x,y))
+        while len(queue):
+            i, j = queue.popleft()
+            if self.revise(i, j):
+                if self.variable_domains[i] == 0:
+                    return False
+                for k in range(48):
+                    if k != j:
+                        queue.append((k, i))
+        return True
 
     def backtrack(self):
         if self.validate():

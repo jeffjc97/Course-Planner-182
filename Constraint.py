@@ -29,7 +29,7 @@ class UniqueCoursesConstraint(Constraint):
     def validate(self, x, y, assignment):
         if not assignment[x] or not assignment[y]:
             return True
-        return assignment[x] != assignment[y]
+        return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
 
 class OverlappingCoursesConstraint(Constraint):
     def __init__ (self):
@@ -54,5 +54,3 @@ class OverlappingCoursesConstraint(Constraint):
                 return True
         else:
             return True
- 
- 

@@ -46,6 +46,7 @@ class ScheduleGenerator():
                 for x in range(48):
                     for y in range(48):
                         if x != y:
+                            # pass 2 slot ids and assignment
                             if not constraint.validate(x, y, assignment):
                                 return False
             else:
@@ -89,7 +90,7 @@ class ScheduleGenerator():
             for y in self.variable_domains[j]:
                 for c in self.constraints:
                     if c.constraint_type = ConstraintType.BinaryConstraint:
-
+                        if c.validate(x, y)
         return revised
 
     def ac3(self):

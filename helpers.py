@@ -8,7 +8,8 @@ def parse_csv():
         csvreader = csv.reader(csvfile)
         next(csvreader, None)
         for line in csvreader:
-            class_dict[line[0]] = {
+            class_dict[line[10]] = {
+                'class_name': int(line[0])
                 'semester': [bool(line[1]), bool(line[2])],
                 'days': [bool(line[3]), bool(line[4]), bool(line[5]), bool(line[6]), bool(line[7])],
                 'times': [float(line[8]), float(line[9])]

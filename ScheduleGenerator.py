@@ -1,4 +1,4 @@
-from Constraint import *
+from constraint import *
 
 class ScheduleGenerator():
     # TODO PREFERENCES!!

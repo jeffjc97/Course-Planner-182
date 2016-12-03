@@ -1,5 +1,5 @@
-from Constraint import *
-from ScheduleGenerator import ScheduleGenerator
+from constraint import *
+from scheduleGenerator import ScheduleGenerator
 import helpers
 
 # dictionary containing all information about courses

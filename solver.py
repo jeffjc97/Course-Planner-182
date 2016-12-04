@@ -1,5 +1,5 @@
-from constraint import *
-from scheduleGenerator import ScheduleGenerator
+from Constraint import *
+from ScheduleGenerator import ScheduleGenerator
 import helpers
 
 class_dict = helpers.parse_csv()

@@ -31,6 +31,7 @@ class UniqueCoursesConstraint(Constraint):
             return True
         return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
 
+# INCLUDE DAYS!!!
 class OverlappingCoursesConstraint(Constraint):
     def __init__ (self):
         self.constraint_type = ConstraintType.BinaryConstraint

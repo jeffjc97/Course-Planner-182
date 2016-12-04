@@ -1,4 +1,4 @@
-from constraint import *
+from Constraint import *
 from collections import deque
 
 class ScheduleGenerator():
@@ -29,6 +29,7 @@ class ScheduleGenerator():
     # initialize domains to all of the classes that meet during the slot's semeste
     # domains - course ids
     def init_domains(self):
+        print self.classes
         for course in self.classes:
             if self.classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
@@ -133,6 +134,8 @@ class ScheduleGenerator():
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
         for value in slot_domain:
+            # print slot_index
+            # print value
             if self.try_validate(slot_index, value):
                 self.assignment[slot_index] = value
                 if self.ac3():

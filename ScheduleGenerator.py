@@ -27,6 +27,7 @@ class ScheduleGenerator():
         return
 
     # initialize domains to all of the classes that meet during the slot's semeste
+    # domains - course ids
     def init_domains(self):
         for course in self.classes:
             if self.classes[course]["semester"][0]:
@@ -84,13 +85,27 @@ class ScheduleGenerator():
                 slots.append(self.get_course_index(year, semester, slot))
         return slots
 
+    # i, j are slot indices
     def revise(self, i, j):
         revised = False
         for x in self.variable_domains[i]:
+            domain_satisfied = False
             for y in self.variable_domains[j]:
+                constraints_satisfied = True
                 for c in self.constraints:
-                    if c.constraint_type = ConstraintType.BinaryConstraint:
-                        if c.validate(x, y)
+                    if c.constraint_type == ConstraintType.BinaryConstraint:
+                        new_assignment = list(self.assignment)
+                        new_assignment[i] = x
+                        new_assignment[j] = y
+                        # if a constraint isn't met, then this value of j won't work
+                        if not c.validate(x, y, new_assignment):
+                            constraints_satisfied = False
+                # if it made it past all constraints, then this domain value works
+                if constraints_satisfied:
+                    domain_satisfied = True
+            if not domain_satisfied:
+                self.variable_domains[i].remove(x)
+                revised = True
         return revised
 
     def ac3(self):
@@ -120,7 +135,7 @@ class ScheduleGenerator():
         for value in slot_domain:
             if self.try_validate(slot_index, value):
                 self.assignment[slot_index] = value
-                if self.ac3:
+                if self.ac3():
                     result = self.backtrack()
                     if result:
                         return result

@@ -41,17 +41,26 @@ class OverlappingCoursesConstraint(Constraint):
             return True
         if helpers.get_slot_from_index(x)['semester'] == helpers.get_slot_from_index(y)['semester']:
             # do something
-            if class_dict[assignment[x]]['times'][0] < class_dict[assignment[y]]['times'][0]:
-                first_class = x
-                second_class = y
-            elif class_dict[assignment[x]]['times'][0] > class_dict[assignment[y]]['times'][0]:
-                first_class = y
-                second_class = x
-            else:
-                return False
-            if class_dict[assignment[first_class]]['times'][1] > class_dict[assignment[second_class]]['times'][0]:
-                return False
-            else:
-                return True
+            x_days = class_dict[assignment[x]]['days']
+            y_days = class_dict[assignment[y]]['days']
+            day_overlap = False
+            for day in range(5):
+                if x_days[day] and y_days[day]:
+                    day_overlap = True
+                    break
+            if day_overlap:
+                if class_dict[assignment[x]]['times'][0] < class_dict[assignment[y]]['times'][0]:
+                    first_class = x
+                    second_class = y
+                elif class_dict[assignment[x]]['times'][0] > class_dict[assignment[y]]['times'][0]:
+                    first_class = y
+                    second_class = x
+                else:
+                    return False
+                if class_dict[assignment[first_class]]['times'][1] > class_dict[assignment[second_class]]['times'][0]:
+                    return False
+                else:
+                    return True
+            return True
         else:
             return True

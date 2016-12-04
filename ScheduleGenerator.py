@@ -42,9 +42,7 @@ class ScheduleGenerator():
     # if new_assignment given, check if that assignment's constraints are satisfied
     def validate(self, new_assignment = None, all_constraints = True):
         assignment = new_assignment if new_assignment else self.assignment
-        print "ALL Constraint", all_constraints
         for constraint in self.constraints:
-            print "TYPE:",constraint.constraint_type
             if constraint.constraint_type == ConstraintType.BinaryConstraint:
                 for x in range(48):
                     for y in range(48):
@@ -90,7 +88,6 @@ class ScheduleGenerator():
 
     # i, j are slot indices
     def revise(self, i, j):
-        print "STARTING REVISE"
         revised = False
         for x in self.variable_domains[i]:
             domain_satisfied = False
@@ -130,10 +127,8 @@ class ScheduleGenerator():
         return True
 
     def backtrack(self):
-        print "before initial validate"
         if self.validate():
             return self.assignment
-        print "after initial validate"
         slot_index = self.select_unassigned()
         slot_domain = self.variable_domains[slot_index]
         cur_assignment = list(self.assignment)
@@ -142,7 +137,9 @@ class ScheduleGenerator():
             # print slot_index
             # print value
             if self.try_validate(slot_index, value):
+                print "BACKTRACK TRY VALIDATE TRUE"
                 self.assignment[slot_index] = value
+                print self.assignment
                 if self.ac3():
                     result = self.backtrack()
                     if result:

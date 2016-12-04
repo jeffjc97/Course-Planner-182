@@ -6,7 +6,7 @@ class ScheduleGenerator():
     def __init__(self,classes):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(48)]
-        self.constraints = [NumCoursesConstraint()]
+        self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint()]
         self.variable_domains = [set() for _ in xrange(48)]
         self.classes = classes
         self.populate_constraints()
@@ -29,7 +29,6 @@ class ScheduleGenerator():
     # initialize domains to all of the classes that meet during the slot's semeste
     # domains - course ids
     def init_domains(self):
-        print self.classes
         for course in self.classes:
             if self.classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
@@ -41,9 +40,11 @@ class ScheduleGenerator():
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
-    def validate(self, new_assignment = None):
+    def validate(self, new_assignment = None, all_constraints = True):
         assignment = new_assignment if new_assignment else self.assignment
+        print "ALL Constraint", all_constraints
         for constraint in self.constraints:
+            print "TYPE:",constraint.constraint_type
             if constraint.constraint_type == ConstraintType.BinaryConstraint:
                 for x in range(48):
                     for y in range(48):
@@ -52,7 +53,7 @@ class ScheduleGenerator():
                             if not constraint.validate(x, y, assignment):
                                 return False
             else:
-                if not constraint.validate(assignment):
+                if all_constraints and not constraint.validate(assignment):
                     return False
         return True
 
@@ -60,7 +61,8 @@ class ScheduleGenerator():
     def try_validate(self, slot, value):
         new_assignment = list(self.assignment)
         new_assignment[slot] = value
-        return self.validate(new_assignment)
+        print "TRY VALIDATE"
+        return self.validate(new_assignment, False)
 
     # get first slot that is unassigned
     # try to fill up 4 classes/semester before adding more
@@ -88,6 +90,7 @@ class ScheduleGenerator():
 
     # i, j are slot indices
     def revise(self, i, j):
+        print "STARTING REVISE"
         revised = False
         for x in self.variable_domains[i]:
             domain_satisfied = False
@@ -99,7 +102,7 @@ class ScheduleGenerator():
                         new_assignment[i] = x
                         new_assignment[j] = y
                         # if a constraint isn't met, then this value of j won't work
-                        if not c.validate(x, y, new_assignment):
+                        if not c.validate(i, j, new_assignment):
                             constraints_satisfied = False
                 # if it made it past all constraints, then this domain value works
                 if constraints_satisfied:
@@ -127,8 +130,10 @@ class ScheduleGenerator():
         return True
 
     def backtrack(self):
+        print "before initial validate"
         if self.validate():
             return self.assignment
+        print "after initial validate"
         slot_index = self.select_unassigned()
         slot_domain = self.variable_domains[slot_index]
         cur_assignment = list(self.assignment)

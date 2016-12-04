@@ -6,7 +6,7 @@ class ScheduleGenerator():
     def __init__(self,classes):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(48)]
-        self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint()]
+        self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
         self.variable_domains = [set() for _ in xrange(48)]
         self.classes = classes
         self.populate_constraints()

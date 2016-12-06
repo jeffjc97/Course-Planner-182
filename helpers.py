@@ -17,12 +17,111 @@ def parse_csv():
     return class_dict
 
 def get_slot_from_index(index):
-    year = index / 12
-    semester = int(index % 12 >= 6)
-    slot = index % 6
+    year = index / 8
+    semester = int(index % 8 >= 4)
+    slot = index % 4
     return {
         'year': year,
         'semester': semester,
         'slot': slot
     }
 
+total_slots = 8
+# slot_index: course_id
+def constraint_cs50_cs51_cs61():
+    constraints = []
+    id_from_course = {
+        50: 1,
+        51: 2,
+        61: 3
+    }
+    for a in range(total_slots):
+        for b in range(a + 1, total_slots):
+            a_time = get_slot_from_index(a)
+            b_time = get_slot_from_index(b)
+            # b will always be a bigger slot, either later year or same year
+            if a_time['year'] < b_time['year']:
+                if a_time['semester'] == 0 and b_time['semester'] == 0:
+                    constraints.append({
+                        a: id_from_course[50],
+                        b: id_from_course[61]
+                    })
+                elif a_time['semester'] == 0 and b_time['semester'] == 1:
+                    constraints.append({
+                        a: id_from_course[50],
+                        b: id_from_course[51]
+                    })
+                    constraints.append({
+                        a: id_from_course[61],
+                        b: id_from_course[51]
+                    })
+                elif a_time['semester'] == 1 and b_time['semester'] == 0:
+                    constraints.append({
+                        a: id_from_course[51],
+                        b: id_from_course[61]
+                    })
+            elif a_time['year'] == b_time['year']:
+                if a_time['semester'] == 0 and b_time['semester'] == 0:
+                    constraints.append({
+                        a: id_from_course[50],
+                        b: id_from_course[61]
+                    })
+                elif a_time['semester'] == 0 and b_time['semester'] == 1:
+                    constraints.append({
+                        a: id_from_course[50],
+                        b: id_from_course[51]
+                    })
+                    constraints.append({
+                        a: id_from_course[61],
+                        b: id_from_course[51]
+                    })
+                # shouldn't happen
+                elif a_time['semester'] == 1 and b_time['semester'] == 0:
+                    constraints.append({
+                        a: id_from_course[51],
+                        b: id_from_course[61]
+                    })
+    return constraints
+
+def constraint_cs121_cs125():
+    constraints = []
+    id_from_course = {
+        121: 8,
+        125: 9,
+    }
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        if a_time['semester'] == 0:
+            constraints.append({
+                a: id_from_course[121]
+            })
+            constraints.append({
+                a: id_from_course[125]
+            })
+    return constraints
+
+# todo 124 125 constraint
+def constraint_cs124_cs127_apmth106_apmth107():
+    constraints = []
+    id_from_course = {
+        124: 10,
+        127: 11,
+        106: 55,
+        107: 56
+    }
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        if a_time['semester'] == 1:
+            constraints.append({
+                a: id_from_course[124]
+            })
+            constraints.append({
+                a: id_from_course[127]
+            })
+            constraints.append({
+                a: id_from_course[106]
+            })
+            constraints.append({
+                a: id_from_course[107]
+            })
+    return constraints

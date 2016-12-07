@@ -4,12 +4,11 @@ from collections import deque
 total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
-    # TODO PREFERENCES!!
     def __init__(self, params, classes, prereqs):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
-        self.variable_domains = [set() for _ in xrange(total_slots)]
+        self.variable_domains = [deque() for _ in xrange(total_slots)]
         self.nonbinary_constraint_domains = []
         # courses that can't be changed
         self.fixed = []
@@ -86,11 +85,19 @@ class ScheduleGenerator():
         for course in self.classes:
             if self.classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
-                    self.variable_domains[slot].add(course)
+                    self.variable_domains[slot].append(course)
             if self.classes[course]["semester"][1]:
                 for slot in self.get_semester_slots(1):
-                    self.variable_domains[slot].add(course)
-
+                    self.variable_domains[slot].append(course)
+        for domain in self.variable_domains:
+            for course in self.params['preferred_classes']:
+                if course in domain:
+                    domain.remove(course)
+                    domain.appendleft(course)
+            for course in self.params['disliked_classes']:
+                if course in domain:
+                    domain.remove(course)
+                    domain.append(course)
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied

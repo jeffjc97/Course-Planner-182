@@ -5,18 +5,20 @@ total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
     # TODO PREFERENCES!!
-    def __init__(self,classes,prereqs):
+    def __init__(self, params, classes, prereqs):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
         self.variable_domains = [set() for _ in xrange(total_slots)]
         self.nonbinary_constraint_domains = []
-        # helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107()
+        # courses that can't be changed
+        self.fixed = []
         self.classes = classes
-        self.populate_constraints()
-        self.populate_nonbinary()
-        self.init_domains()
+        self.params = params
         self.prereqs = prereqs
+        self.populate_nonbinary()
+        self.process_params()
+        self.init_domains()
 
     # given specific slot, return index
     # Year = [0,1,2,3]; Semester = {0:fall, 1:spring}; Slot=[0,1,2,3,4,5]
@@ -29,18 +31,47 @@ class ScheduleGenerator():
         return self.assignment[self.get_course_index(year, semester, slot)]
 
     # TODO add custom constraints
-    def populate_constraints(self):
+    def process_params(self):
+        # Fixing expos course time
+        if self.params['expos'] == 0:
+            self.assignment[0] = -1
+            self.fixed.append(0)
+        else:
+            self.assignment[4] = -1
+            self.fixed.append(4)
+
+        if self.params['math1a']:
+            self.nonbinary_constraint_domains.append(helpers.constraint_math1a())
+        if self.params['math1b']:
+            self.nonbinary_constraint_domains.append(helpers.constraint_math1b())
+        
+        self.nonbinary_constraint_domains += helpers.constraint_math(self.params['linalg'], self.params['multi'])
+        
+        id_from_course = {
+            "21a": [38, 39, 40, 41, 42, 43],
+            "21b": [44, 45, 46, 47],
+            "23a": [48],
+            "23b": [49],
+            "25a": [50],
+            "25b": [51],
+            "55a": [52],
+            "55b": [53]
+        }
+        for c_name in id_from_course:
+            if c_name != self.params['linalg'] and c_name != self.params['multi']:
+                for c_id in id_from_course[c_name]:
+                    del self.classes[c_id]
+
         return
 
     # ALL NONBINARY CONSTRAINTS
     # list of dictionaries for each constraint
     def populate_nonbinary(self):
         self.nonbinary_constraint_domains = [
-            helpers.constraint_gen_ed_sp(),
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
-            helpers.constraint_math(),
+            # helpers.constraint_math(),
             helpers.constraint_gen_ed_ai_cb(),
             helpers.constraint_gen_ed_er(),
             helpers.constraint_gen_ed_sls_spu(),
@@ -64,8 +95,8 @@ class ScheduleGenerator():
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
     def validate(self, new_assignment = None, new_constraint_domain = None, all_constraints = True):
-        assignment = new_assignment if new_assignment else self.assignment
-        constraint_domains = new_constraint_domain if new_constraint_domain else self.nonbinary_constraint_domains
+        assignment = new_assignment if new_assignment else list(self.assignment)
+        constraint_domains = new_constraint_domain if new_constraint_domain else list(self.nonbinary_constraint_domains)
         for constraint in self.constraints:
             if constraint.constraint_type == ConstraintType.BinaryConstraint:
                 for x in range(total_slots):
@@ -115,7 +146,7 @@ class ScheduleGenerator():
         for year in xrange(4):
             for semester in xrange(2):
                 for slot in xrange(slots_per_semester):
-                    if not self.get_course(year, semester, slot):
+                    if self.get_course(year, semester, slot) is None:
                         return self.get_course_index(year, semester, slot)
         return None
 
@@ -184,6 +215,7 @@ class ScheduleGenerator():
                 # if revise removed all of the potential domain values for a nonbinary constraint
                 for d_i, c in enumerate(self.nonbinary_constraint_domains):
                     if len(c) == 0:
+                        print "FAILED CONSTRAINT IN AC3:", d_i
                         return False
                 for k in range(total_slots):
                     if k != j:

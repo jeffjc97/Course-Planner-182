@@ -6,7 +6,18 @@ import helpers
 class_dict = helpers.total_class_dict()
 id_dict = helpers.get_course_id_dict()
 prereqs = helpers.get_prereqs()
-sg = ScheduleGenerator(class_dict, prereqs)
+
+params = {
+    'math1a': True,
+    'math1b': True,
+    'linalg': '25a',
+    # 21b, 23a, 25a, 55a
+    'multi': '25b',
+    # 21a, 23b, 25b, 55b
+    'expos': 1
+}
+
+sg = ScheduleGenerator(params, class_dict, prereqs)
 
 result = sg.backtrack()
 # print result

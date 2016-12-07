@@ -10,6 +10,7 @@ class ScheduleGenerator():
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
         self.variable_domains = [set() for _ in xrange(total_slots)]
         self.nonbinary_constraint_domains = [helpers.constraint_cs50_cs51_cs61(), helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107(), helpers.constraint_math()]
+        # helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107()
         self.classes = classes
         self.populate_constraints()
         self.populate_nonbinary()
@@ -51,6 +52,21 @@ class ScheduleGenerator():
     def validate(self, new_assignment = None, new_constraint_domain = None, all_constraints = True):
         assignment = new_assignment if new_assignment else self.assignment
         constraint_domains = new_constraint_domain if new_constraint_domain else self.nonbinary_constraint_domains
+        print "MATH CONSTRAINT"
+        print assignment
+        print constraint_domains[3]
+        if assignment == [1, 4, 38, 8, None, None, None, None]:
+            print "========================================="
+            print "-"
+            print "-"
+            print "-"
+            print "-fuck"
+            print "-"
+            print "-"
+            print "-"
+            print "-"
+            print "-"
+            print constraint_domains
         for constraint in self.constraints:
             if constraint.constraint_type == ConstraintType.BinaryConstraint:
                 for x in range(total_slots):
@@ -63,8 +79,10 @@ class ScheduleGenerator():
                 if all_constraints and not constraint.validate(assignment):
                     return False
         # now checking constraint domains for nonbinary
-        for domain in constraint_domains:
+        for d_i, domain in enumerate(constraint_domains):
             if len(domain) == 0:
+                # print assignment
+                # print "CONSTRAINT", d_i, "FAILED"
                 return False
         return True
 
@@ -130,13 +148,21 @@ class ScheduleGenerator():
             if not domain_satisfied:
                 self.variable_domains[i].remove(x)
                 # also remove all possible constraint domain options that had val x for slot i
-                for constraint_domain in self.nonbinary_constraint_domains:
+                # for constraint_domain in self.nonbinary_constraint_domains:
+                #     for dict_i, val_dict in enumerate(constraint_domain):
+                #         if i in val_dict:
+                #             if val_dict[i] == x:
+                #                 # remove this from domain
+                #                 del constraint_domain[dict_i]
+                #                 break
+                for cd_i, constraint_domain in enumerate(self.nonbinary_constraint_domains):
+                    cd = list(constraint_domain)
                     for dict_i, val_dict in enumerate(constraint_domain):
                         if i in val_dict:
                             if val_dict[i] == x:
-                                # remove this from domain
-                                del constraint_domain[dict_i]
+                                cd.remove(val_dict)
                                 break
+                    self.nonbinary_constraint_domains[cd_i] = cd
                 revised = True
         return revised
 
@@ -153,8 +179,9 @@ class ScheduleGenerator():
                 if len(self.variable_domains[i]) == 0:
                     return False
                 # if revise removed all of the potential domain values for a nonbinary constraint
-                for c in self.nonbinary_constraint_domains:
+                for d_i, c in enumerate(self.nonbinary_constraint_domains):
                     if len(c) == 0:
+                        print "CONSTRAINT", d_i, "FAILED IN AC3"
                         return False
                 for k in range(total_slots):
                     if k != j:
@@ -194,8 +221,11 @@ class ScheduleGenerator():
                     result = self.backtrack()
                     if result:
                         return result
-            self.assignment = cur_assignment
-            self.variable_domains = cur_domains
-            self.nonbinary_constraint_domains = cur_nonbinary_domains
+            # print "COULDN'T USE", value, "IN SLOT", slot_index
+            self.assignment = list(cur_assignment)
+            self.variable_domains = list(cur_domains)
+            print "REVERTING DOMAIN"
+            print cur_nonbinary_domains[3]
+            self.nonbinary_constraint_domains = list(cur_nonbinary_domains)
         print self.assignment
         return False

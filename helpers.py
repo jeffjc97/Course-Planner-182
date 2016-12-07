@@ -152,3 +152,73 @@ def constraint_cs124_cs127_apmth106_apmth107():
                 a: id_from_course[107]
             })
     return constraints
+
+# Math constraints
+def constraint_math():
+    constraints = []
+    # 21a/b are offered both semesters in weird times;
+    # 23a, 25a, 55a --> Fall // 23b, 25b, 55b --> Spring
+    # (Multivariable Calculus FALL, Linear Algebra SPRING)
+    # (21a, 21b), (21a, 23a), (21a, 25a), (21a, 55a)
+    # (23b, 21b), (23b, 23a), (23b, 25a), (23b, 55a)
+    # (25b, 21b), (25b, 23a), (25b, 25a), (25b, 55a)
+    # (55b, 21b), (55b, 23a), (55b, 25a), (55b, 55a)
+    # OR you can take 21b in the fall and 21a in the spring (21b, 21a)
+
+    id_from_course = {
+        "21a1": 38,
+        "21a2": 39,
+        "21a3": 40,
+        "21a4": 41,
+        "21a5": 42,
+        "21a6": 43,
+        "21b1": 44,
+        "21b2": 45,
+        "21b3": 46,
+        "21b4": 47,
+        "23a": 48,
+        "23b": 49,
+        "25a": 50,
+        "25b": 51,
+        "55a": 52,
+        "55b": 53
+    }
+    classes = ["21a", "21b", "23a", "23b", "25a", "25b", "55a", "55b"]
+
+    # 21b/a combination dealt with later
+    fall_classes = ['21a', '23a', '25a', '55a']
+    spring_classes = ['21b', '23b', '25b', '55b']
+
+    for a in range(total_slots):
+        for b in range(a+1, total_slots):
+            a_time = get_slot_from_index(a)
+            b_time = get_slot_from_index(b)
+
+            # a: fall, b: spring
+            if a_time['semester'] == 0 and b_time['semester'] == 1:
+                for fall in fall_classes:
+                    for spring in spring_classes:
+                        if fall == "21a":
+                            for x in range(1,7):
+                                if spring == "21b":
+                                    for y in range(1,5):
+                                        constraints.append( {a: id_from_course[fall + str(x)], b: id_from_course[spring + str(y)]} )
+                                        # print a, fall + str(x), ", ", b, spring + str(y)
+                                else:
+                                    constraints.append( {a: id_from_course[fall + str(x)], b: id_from_course[spring]} )
+                                    # print a, fall + str(x), ", ", b, spring
+                        elif spring == "21b":
+                            for y in range(1,5):
+                                constraints.append( {a: id_from_course[fall], b: id_from_course[spring + str(y)]} )
+                                # print a, fall, ", ", b, spring + str(y)
+                        else:
+                                constraints.append( {a: id_from_course[fall], b: id_from_course[spring]} )
+                                # print a, fall, ", ", b, spring
+
+            # a: Spring, b: Fall, so only 21b,21a
+            elif a_time['semester'] == 1 and b_time['semester'] == 0:
+                for x in range(6):
+                    for y in range(4):
+                        constraints.append( {a: id_from_course['21b' + str(y)], b: id_from_course['21a' + str(x)]} )
+    return constraints
+# print len(constraint_math())

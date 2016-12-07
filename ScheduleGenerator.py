@@ -9,7 +9,7 @@ class ScheduleGenerator():
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
         self.variable_domains = [set() for _ in xrange(total_slots)]
-        self.nonbinary_constraint_domains = [helpers.constraint_cs50_cs51_cs61(), helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107()]
+        self.nonbinary_constraint_domains = [helpers.constraint_cs50_cs51_cs61(), helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107(), helpers.constraint_math()]
         self.classes = classes
         self.populate_constraints()
         self.populate_nonbinary()
@@ -73,7 +73,7 @@ class ScheduleGenerator():
         new_assignment = list(self.assignment)
         new_assignment[slot] = value
         nonbinary_constraint_domains = list(self.nonbinary_constraint_domains)
-        print "IN TRY VALIDATE", nonbinary_constraint_domains
+        # print "IN TRY VALIDATE", nonbinary_constraint_domains
         # updating constraint domains
         # TODO AM I SUPPOSED TO DO THIS HERE??
         for cd_i, constraint_domain in enumerate(nonbinary_constraint_domains):
@@ -85,7 +85,7 @@ class ScheduleGenerator():
                         cd.remove(val_dict)
                         break
             nonbinary_constraint_domains[cd_i] = cd
-        print "TRY VALIDATE"
+        # print "TRY VALIDATE"
         return self.validate(new_assignment, nonbinary_constraint_domains, False)
 
     # get first slot that is unassigned
@@ -174,10 +174,10 @@ class ScheduleGenerator():
             # print value
 
             if self.try_validate(slot_index, value):
-                print "BACKTRACK TRY VALIDATE TRUE"
+                # print "BACKTRACK TRY VALIDATE TRUE"
                 self.assignment[slot_index] = value
-                print "BEFORE:"
-                print self.nonbinary_constraint_domains
+                # print "BEFORE:"
+                # print self.nonbinary_constraint_domains
                 for cd_i, constraint_domain in enumerate(self.nonbinary_constraint_domains):
                     cd = list(constraint_domain)
                     for i, val_dict in enumerate(constraint_domain):
@@ -187,9 +187,9 @@ class ScheduleGenerator():
                                 cd.remove(val_dict)
                                 break
                     self.nonbinary_constraint_domains[cd_i] = cd
-                print self.assignment
-                print "AFTER:"
-                print self.nonbinary_constraint_domains
+                # print self.assignment
+                # print "AFTER:"
+                # print self.nonbinary_constraint_domains
                 if self.ac3():
                     result = self.backtrack()
                     if result:

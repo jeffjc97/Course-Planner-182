@@ -5,18 +5,21 @@ total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
     # TODO PREFERENCES!!
-    def __init__(self,classes,prereqs):
+    def __init__(self,classes,prereqs,preferred_classes,disliked_classes):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
-        self.variable_domains = [set() for _ in xrange(total_slots)]
+        self.variable_domains = [deque() for _ in xrange(total_slots)]
         self.nonbinary_constraint_domains = []
         # helpers.constraint_cs121_cs125(), helpers.constraint_cs124_cs127_apmth106_apmth107()
         self.classes = classes
         self.populate_constraints()
         self.populate_nonbinary()
+        self.preferred_classes = preferred_classes
+        self.disliked_classes = disliked_classes
         self.init_domains()
         self.prereqs = prereqs
+
 
     # given specific slot, return index
     # Year = [0,1,2,3]; Semester = {0:fall, 1:spring}; Slot=[0,1,2,3,4,5]
@@ -36,7 +39,6 @@ class ScheduleGenerator():
     # list of dictionaries for each constraint
     def populate_nonbinary(self):
         self.nonbinary_constraint_domains = [
-            helpers.constraint_gen_ed_sp(),
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
@@ -55,11 +57,19 @@ class ScheduleGenerator():
         for course in self.classes:
             if self.classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
-                    self.variable_domains[slot].add(course)
+                    self.variable_domains[slot].append(course)
             if self.classes[course]["semester"][1]:
                 for slot in self.get_semester_slots(1):
-                    self.variable_domains[slot].add(course)
-
+                    self.variable_domains[slot].append(course)
+        for domain in self.variable_domains:
+            for course in self.preferred_classes:
+                if course in domain:
+                    domain.remove(course)
+                    domain.appendleft(course)
+            for course in self.disliked_classes:
+                if course in domain:
+                    domain.remove(course)
+                    domain.append(course)
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied

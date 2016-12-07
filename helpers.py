@@ -42,6 +42,19 @@ def parse_geneds():
                         prev = int(line[0])
     return dicts
 
+def get_course_id_dict():
+    id_dict = {}
+    # read in CSV file with all course info
+    with open('class_times.csv', 'rb') as csvfile:
+        csvreader = csv.reader(csvfile)
+        next(csvreader, None)
+        for line in csvreader:
+            # key: class name, value: course ID
+            id_dict[line[0]] = {
+                line[10]
+            }
+    return id_dict
+
 def get_slot_from_index(index):
     year = index / 8
     semester = int(index % 8 >= 4)
@@ -52,6 +65,51 @@ def get_slot_from_index(index):
         'slot': slot
     }
 
+# TODO: Add Stat and Math prereqs once they're added into the general domain
+def get_prereqs():
+    return {
+        # CS61: CS50
+        3: [1],
+        # CS109A: CS50, STAT110
+        6: [1, 63],
+        # CS109B: CS109A
+        7: [6],
+        # CS121: Discrete Math (CS20)
+        # CS124: CS50, (CS121, Formal math, AM106, AM107, STAT110 is helpful)
+        10: [1],
+        # CS125: Comfort with Math 25, 55
+        # CS127: (comfort with proofs at the level of CS121, CS124)
+        # CS134: (Linear Algebra, Multivariable Calculus, STAT110)
+        # 12: [63]
+        # CS136: (Applied Math 21b, Computer Science 51 or equivalent, Statistics 110, and one of Computer Science 181, Computer Science 182, Economics 1011a, Economics 1052, or Economics 1056.)
+        # CS141: programming experience
+        14: [1],
+        # CS143: CS50 recommended
+        15: [1],
+        # CS146: None
+        # CS148: CS141
+        18: [14],
+        # CS152: CS51, CS121
+        19: [2, 8],
+        # CS153: CS51, CS61
+        20: [2, 3],
+        # CS161: CS61
+        21: [3],
+        # CS164: Any four courses numbered 50 or higher
+        # CS165: CS51, CS61
+        23: [2, 3],
+        # CS171: (CS50 programming experience)
+        24: [1],
+        # CS175: CS51 or CS61 + Linear Algebra
+        # CS179: (CS50 programming experience)
+        26: [1],
+        # CS181: CS51, CS121, STAT110, Linear Algebra, Multivariable Calculus
+        27: [2, 8, 63],
+        # CS182: CS51, CS121
+        28: [2, 8],
+        # CS187: CS51, CS121 (not offered)
+        # CS189: None
+    }
 
 total_slots = 8
 # slot_index: course_id

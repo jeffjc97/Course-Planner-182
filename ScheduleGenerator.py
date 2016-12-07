@@ -4,7 +4,7 @@ from collections import deque
 total_slots = 8
 class ScheduleGenerator():
     # TODO PREFERENCES!!
-    def __init__(self,classes):
+    def __init__(self,classes,prereqs):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
@@ -15,6 +15,7 @@ class ScheduleGenerator():
         self.populate_constraints()
         self.populate_nonbinary()
         self.init_domains()
+        self.prereqs = prereqs
 
     # given specific slot, return index
     # Year = [0,1,2,3]; Semester = {0:fall, 1:spring}; Slot=[0,1,2,3,4,5]
@@ -91,6 +92,12 @@ class ScheduleGenerator():
         new_assignment = list(self.assignment)
         new_assignment[slot] = value
         nonbinary_constraint_domains = list(self.nonbinary_constraint_domains)
+        # check prerequisites
+        if value in self.prereqs:
+            for prereq in self.prereqs:
+                if not prereq in new_assignment:
+                    return False
+        
         # print "IN TRY VALIDATE", nonbinary_constraint_domains
         # updating constraint domains
         # TODO AM I SUPPOSED TO DO THIS HERE??

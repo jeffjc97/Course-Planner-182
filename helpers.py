@@ -1,6 +1,6 @@
 import csv
 
-total_slots = 16
+total_slots = 32
 
 # creates dictionary containing all information about courses
 def parse_csv():
@@ -43,6 +43,43 @@ def parse_geneds_single_dict():
                         prev = int(line[0])
     return gen_ed_dict
 
+def total_class_dict():
+    class_dict = {}
+    # read in CSV file with all course info
+    with open('class_times.csv', 'rb') as csvfile:
+        csvreader = csv.reader(csvfile)
+        next(csvreader, None)
+        for line in csvreader:
+            class_dict[int(line[10])] = {
+                'class_name': line[0],
+                'semester': [line[1] == 'TRUE', line[2] == 'TRUE'],
+                'days': [line[3]  == 'TRUE', line[4]  == 'TRUE', line[5]  == 'TRUE', line[6]  == 'TRUE', line[7]  == 'TRUE'],
+                'times': [float(line[8]), float(line[9])],
+                'gened': 'concentration'
+            }
+
+    geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
+    for i in range(len(geneds)):
+        with open(geneds[i] + '.csv', 'rb') as csvfile:
+            csvreader = csv.reader(csvfile)
+            next(csvreader, None)
+            prev = None
+            for line in csvreader:
+                # mark with catalog number
+                if not line[11] == "":
+                    if line[0] == "":
+                        class_dict[prev]['days'][int(line[11]) - 1] = True
+                    else:
+                        class_dict[int(line[0])] = {
+                            'class_name': geneds[i] + line[4] + line[5],
+                            'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
+                            'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
+                            'times': [line[14].replace(":", "")[0:4], line[15].replace(":", "")[0:4]],
+                            'gened': geneds[i]
+                        }
+                        prev = int(line[0])
+
+    return class_dict
 
 def parse_geneds():
     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
@@ -139,7 +176,6 @@ def get_prereqs():
         # CS189: None
     }
 
-total_slots = 8
 # slot_index: course_id
 def constraint_cs50_cs51_cs61():
     constraints = []
@@ -238,6 +274,8 @@ def constraint_cs124_cs127_apmth106_apmth107():
                 a: id_from_course[107]
             })
     return constraints
+
+print(constraint_cs124_cs127_apmth106_apmth107())
 
 # Math constraints
 def constraint_math():

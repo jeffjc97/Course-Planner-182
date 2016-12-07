@@ -1,7 +1,7 @@
 from Constraint import *
 from collections import deque
 
-total_slots = 16
+total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
     # TODO PREFERENCES!!
@@ -36,6 +36,7 @@ class ScheduleGenerator():
     # list of dictionaries for each constraint
     def populate_nonbinary(self):
         self.nonbinary_constraint_domains = [
+            helpers.constraint_gen_ed_sp(),
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
@@ -44,7 +45,6 @@ class ScheduleGenerator():
             helpers.constraint_gen_ed_er(),
             helpers.constraint_gen_ed_sls_spu(),
             helpers.constraint_gen_ed_sw_usw(),
-            helpers.constraint_gen_ed_sp()
         ]
         print self.nonbinary_constraint_domains
         return
@@ -91,7 +91,7 @@ class ScheduleGenerator():
         nonbinary_constraint_domains = list(self.nonbinary_constraint_domains)
         # check prerequisites
         if value in self.prereqs:
-            for prereq in self.prereqs:
+            for prereq in self.prereqs[value]:
                 if not prereq in new_assignment:
                     return False
 

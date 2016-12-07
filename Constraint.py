@@ -1,5 +1,6 @@
 import helpers
-class_dict = helpers.parse_csv()
+# class_dict = helpers.parse_csv()
+class_dict = helpers.total_class_dict()
 
 class ConstraintType():
     OverallConstraint = 1
@@ -20,7 +21,7 @@ class NumCoursesConstraint(Constraint):
         for slot in assignment:
             if slot:
                 num_courses += 1
-        return num_courses >= 16
+        return num_courses >= 32
 
 class UniqueCoursesConstraint(Constraint):
     def __init__ (self):

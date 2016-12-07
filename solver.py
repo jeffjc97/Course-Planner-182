@@ -2,7 +2,8 @@ from Constraint import *
 from ScheduleGenerator import ScheduleGenerator
 import helpers
 
-class_dict = helpers.parse_csv()
+# class_dict = helpers.parse_csv()
+class_dict = helpers.total_class_dict()
 id_dict = helpers.get_course_id_dict()
 prereqs = helpers.get_prereqs()
 sg = ScheduleGenerator(class_dict, prereqs)

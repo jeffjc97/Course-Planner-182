@@ -71,7 +71,7 @@ def total_class_dict():
                         class_dict[prev]['days'][int(line[11]) - 1] = True
                     else:
                         class_dict[int(line[0])] = {
-                            'class_name': geneds[i] + line[4] + line[5],
+                            'class_name': geneds[i] + line[4],
                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
                             'times': [line[14].replace(":", "")[0:4], line[15].replace(":", "")[0:4]],
@@ -99,7 +99,7 @@ def parse_geneds():
                         class_dict[prev]['days'][int(line[11]) - 1] = True
                     else:
                         class_dict[int(line[0])] = {
-                            'class_name': geneds[i] + line[4] + line[5],
+                            'class_name': geneds[i] + line[4],
                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
                             'times': [line[14].replace(":", "")[0:4], line[15].replace(":", "")[0:4]]
@@ -115,9 +115,7 @@ def get_course_id_dict():
         next(csvreader, None)
         for line in csvreader:
             # key: class name, value: course ID
-            id_dict[line[0]] = {
-                line[10]
-            }
+            id_dict[line[0]] = int(line[10])
     return id_dict
 
 def get_slot_from_index(index):

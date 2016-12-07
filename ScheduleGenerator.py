@@ -5,7 +5,7 @@ total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
     # TODO PREFERENCES!!
-    def __init__(self,classes,prereqs,preferred_classes,disliked_classes):
+    def __init__(self,classes,prereqs,preferred_classes,disliked_classes,math_preference,expos_preference):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
@@ -19,7 +19,8 @@ class ScheduleGenerator():
         self.disliked_classes = disliked_classes
         self.init_domains()
         self.prereqs = prereqs
-
+        self.math_preference = math_preference
+        self.expos_preference = expos_preference
 
     # given specific slot, return index
     # Year = [0,1,2,3]; Semester = {0:fall, 1:spring}; Slot=[0,1,2,3,4,5]

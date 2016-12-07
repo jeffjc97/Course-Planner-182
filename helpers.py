@@ -1,5 +1,7 @@
 import csv
 
+total_slots = 16
+
 # creates dictionary containing all information about courses
 def parse_csv():
     class_dict = {}
@@ -12,9 +14,35 @@ def parse_csv():
                 'class_name': line[0],
                 'semester': [line[1] == 'TRUE', line[2] == 'TRUE'],
                 'days': [line[3]  == 'TRUE', line[4]  == 'TRUE', line[5]  == 'TRUE', line[6]  == 'TRUE', line[7]  == 'TRUE'],
-                'times': [float(line[8]), float(line[9])]
+                'times': [float(line[8]), float(line[9])],
+                'gened': 'concentration'
             }
     return class_dict
+
+def parse_geneds_single_dict():
+    geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
+    gen_ed_dict = {}
+    for i in range(len(geneds)):
+        with open(geneds[i] + '.csv', 'rb') as csvfile:
+            csvreader = csv.reader(csvfile)
+            next(csvreader, None)
+            prev = None
+            for line in csvreader:
+                # mark with catalog number
+                if not line[11] == "":
+                    if line[0] == "":
+                        gen_ed_dict[prev]['days'][int(line[11]) - 1] = True
+                    else:
+                        gen_ed_dict[int(line[0])] = {
+                            'class_name': geneds[i] + line[4] + line[5],
+                            'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
+                            'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
+                            'times': [line[14].replace(":", "")[0:4], line[15].replace(":", "")[0:4]],
+                            'gened': geneds[i]
+                        }
+                        prev = int(line[0])
+    return gen_ed_dict
+
 
 def parse_geneds():
     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
@@ -275,8 +303,84 @@ def constraint_math():
 
             # a: Spring, b: Fall, so only 21b,21a
             elif a_time['semester'] == 1 and b_time['semester'] == 0:
-                for x in range(6):
-                    for y in range(4):
+                for x in range(1,7):
+                    for y in range(1,5):
                         constraints.append( {a: id_from_course['21b' + str(y)], b: id_from_course['21a' + str(x)]} )
     return constraints
 # print len(constraint_math())
+
+def constraint_gen_ed_ai_cb():
+    ai, cb = parse_geneds()[:2]
+    constraints = []
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        for course in ai:
+            if ai[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+        for course in cb:
+            if cb[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+    return constraints
+
+def constraint_gen_ed_er():
+    er = parse_geneds()[3]
+    constraints = []
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        for course in er:
+            if er[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+    return constraints
+
+def constraint_gen_ed_sls_spu():
+    geneds = parse_geneds()
+    sls, spu = geneds[4], geneds[6]
+    constraints = []
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        for course in sls:
+            if sls[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+        for course in spu:
+            if spu[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+    return constraints
+
+def constraint_gen_ed_sw_usw():
+    sw, usw = parse_geneds()[7:]
+    constraints = []
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        for course in sw:
+            if sw[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+        for course in usw:
+            if usw[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+    return constraints
+
+def constraint_gen_ed_sp():
+    sp = parse_geneds()[5]
+    constraints = []
+    for a in range(total_slots):
+        a_time = get_slot_from_index(a)
+        for course in sp:
+            if sp[course]['semester'][a_time['semester']]:
+                constraints.append({
+                    a: course
+                })
+    return constraints

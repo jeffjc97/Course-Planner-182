@@ -20,7 +20,7 @@ class NumCoursesConstraint(Constraint):
         for slot in assignment:
             if slot:
                 num_courses += 1
-        return num_courses >= 8
+        return num_courses >= 16
 
 class UniqueCoursesConstraint(Constraint):
     def __init__ (self):

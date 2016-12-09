@@ -51,6 +51,13 @@ params = {}
 #     expos = raw_input().lower()
 # params['expos'] = 0 if expos == 'fall' else 1
 #
+# print 'What is the maximum number of concentration courses you want to take per semester? (2, 3, 4)'
+# params['max'] = raw_input()
+# while params['max'] not in ['2', '3', '4']:
+#     print 'Invalid input. Select from 2, 3, or 4'
+#     params['max'] = raw_input()
+# params['max'] = int(params['max'])
+#
 # print 'What clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
 # params['preferred_classes'] = raw_input().upper().split()
 # while not valid_courses(params['preferred_classes']):
@@ -71,6 +78,7 @@ params['math1b'] = 1
 params['multi'] = '23b'
 params['linalg'] = '23a'
 params['expos'] = 0
+params['max'] = 2
 params['preferred_classes'] = ['CS50']
 params['disliked_classes'] = ['CS161']
 sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)

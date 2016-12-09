@@ -180,6 +180,14 @@ class ScheduleGenerator():
                 slots.append(self.get_course_index(year, semester, slot))
         return slots
 
+    def get_cs_count(self, index):
+        semester_start_index = slots_per_semester * (index / slots_per_semester)
+        counter = 0
+        for i in range(semester_start_index, semester_start_index + 4):
+            if self.assignment[i] and self.assignment[i] != -1 and self.assignment[i] in self.cs_classes:
+                counter += 1
+        return counter
+
     # i, j are slot indices
     def revise(self, i, j):
         revised = False
@@ -253,8 +261,13 @@ class ScheduleGenerator():
         if self.validate():
             return self.assignment
         slot_index = self.select_unassigned()
-        # must iterate over both CS and GenEds, so ordering GenEds or CS first with prob 0.5
-        slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.5 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
+        if self.get_cs_count(slot_index) >= self.params['max']:
+            # if we've reached the limit of concentration classes, only select gen eds
+            print "NEED TO SELECT GEN ED"
+            slot_domain = list(self.variable_domains[slot_index][1])
+        else:
+            # must iterate over both CS and GenEds, so ordering GenEds or CS first with prob 0.5
+            slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.5 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
         cur_nonbinary_domains = list(self.nonbinary_constraint_domains)

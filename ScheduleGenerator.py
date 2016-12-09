@@ -1,18 +1,21 @@
 from Constraint import *
 from collections import deque
+import random
 
 total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
-    def __init__(self, params, classes, prereqs):
+    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
-        self.variable_domains = [deque() for _ in xrange(total_slots)]
+        # two deques, one for CS (0), one for GenEds (1)
+        self.variable_domains = [(deque(), deque()) for _ in xrange(total_slots)]
         self.nonbinary_constraint_domains = []
         # courses that can't be changed
         self.fixed = []
-        self.classes = classes
+        self.cs_classes = cs_class_dict
+        self.gened_classes = gened_class_dict
         self.params = params
         self.prereqs = prereqs
         self.populate_nonbinary()
@@ -43,9 +46,9 @@ class ScheduleGenerator():
             self.nonbinary_constraint_domains.append(helpers.constraint_math1a())
         if self.params['math1b']:
             self.nonbinary_constraint_domains.append(helpers.constraint_math1b())
-        
+
         self.nonbinary_constraint_domains += helpers.constraint_math(self.params['linalg'], self.params['multi'])
-        
+
         id_from_course = {
             "21a": [38, 39, 40, 41, 42, 43],
             "21b": [44, 45, 46, 47],
@@ -59,7 +62,7 @@ class ScheduleGenerator():
         for c_name in id_from_course:
             if c_name != self.params['linalg'] and c_name != self.params['multi']:
                 for c_id in id_from_course[c_name]:
-                    del self.classes[c_id]
+                    del self.cs_classes[c_id]
 
         return
 
@@ -70,34 +73,46 @@ class ScheduleGenerator():
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
-            # helpers.constraint_math(),
             helpers.constraint_gen_ed_ai_cb(),
             helpers.constraint_gen_ed_er(),
             helpers.constraint_gen_ed_sls_spu(),
             helpers.constraint_gen_ed_sw_usw(),
         ]
-        print self.nonbinary_constraint_domains
+        # print self.nonbinary_constraint_domains
         return
 
     # initialize domains to all of the classes that meet during the slot's semeste
     # domains - course ids
     def init_domains(self):
-        for course in self.classes:
-            if self.classes[course]["semester"][0]:
+        # adding CS courses into their respective semester's slots
+        for course in self.cs_classes:
+            if self.cs_classes[course]["semester"][0]:
                 for slot in self.get_semester_slots(0):
-                    self.variable_domains[slot].append(course)
-            if self.classes[course]["semester"][1]:
+                    self.variable_domains[slot][0].append(course)
+            if self.cs_classes[course]["semester"][1]:
                 for slot in self.get_semester_slots(1):
-                    self.variable_domains[slot].append(course)
-        for domain in self.variable_domains:
-            for course in self.params['preferred_classes']:
-                if course in domain:
-                    domain.remove(course)
-                    domain.appendleft(course)
+                    self.variable_domains[slot][0].append(course)
+
+        # adding GenEds into their respective semester's slots
+        for course in self.gened_classes:
+            if self.gened_classes[course]['semester'][0]:
+                for slot in self.get_semester_slots(0):
+                    self.variable_domains[slot][1].append(course)
+            if self.gened_classes[course]['semester'][1]:
+                for slot in self.get_semester_slots(1):
+                    self.variable_domains[slot][1].append(course)
+
+        # prioritizing math class preference
+        for slot in self.variable_domains:
+            new_preferred = self.params['preferred_classes'] + ['MATH'+self.params['linalg']] + ['MATH'+self.params['multi']]
+            for course in new_preferred:
+                if course in slot[0]:
+                    slot[0].remove(course)
+                    slot[0].appendleft(course)
             for course in self.params['disliked_classes']:
-                if course in domain:
-                    domain.remove(course)
-                    domain.append(course)
+                if course in slot[0]:
+                    slot[0].remove(course)
+                    slot[0].append(course)
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
@@ -118,7 +133,7 @@ class ScheduleGenerator():
         # now checking constraint domains for nonbinary
         for d_i, domain in enumerate(constraint_domains):
             if len(domain) == 0:
-                print "FAILED CONSTRAINT", d_i
+                print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
                 return False
         return True
 
@@ -133,7 +148,6 @@ class ScheduleGenerator():
                 if not prereq in new_assignment:
                     return False
 
-        # print "IN TRY VALIDATE", nonbinary_constraint_domains
         # updating constraint domains
         # TODO AM I SUPPOSED TO DO THIS HERE??
         for cd_i, constraint_domain in enumerate(nonbinary_constraint_domains):
@@ -169,9 +183,11 @@ class ScheduleGenerator():
     # i, j are slot indices
     def revise(self, i, j):
         revised = False
-        for x in self.variable_domains[i]:
+        # checking both CS and GenEd courses in x
+        for x in deque(list(self.variable_domains[i][0]) + list(self.variable_domains[i][1])):
             domain_satisfied = False
-            for y in self.variable_domains[j]:
+            # checking both CS and GenEd courses in y
+            for y in deque(list(self.variable_domains[j][0]) + list(self.variable_domains[j][1])):
                 constraints_satisfied = True
                 for c in self.constraints:
                     if c.constraint_type == ConstraintType.BinaryConstraint:
@@ -187,7 +203,10 @@ class ScheduleGenerator():
                     domain_satisfied = True
                     break
             if not domain_satisfied:
-                self.variable_domains[i].remove(x)
+                if x in self.variable_domains[i][0]:
+                    self.variable_domains[i][0].remove(x)
+                else:
+                    self.variable_domains[i][1].remove(x)
                 # also remove all possible constraint domain options that had val x for slot i
                 # for constraint_domain in self.nonbinary_constraint_domains:
                 #     for dict_i, val_dict in enumerate(constraint_domain):
@@ -217,7 +236,8 @@ class ScheduleGenerator():
         while len(queue):
             i, j = queue.popleft()
             if self.revise(i, j):
-                if len(self.variable_domains[i]) == 0:
+                if len(self.variable_domains[0][i]) == 0 and len(self.variable_domains[1][i] == 0):
+                    print "!!!"
                     return False
                 # if revise removed all of the potential domain values for a nonbinary constraint
                 for d_i, c in enumerate(self.nonbinary_constraint_domains):
@@ -233,7 +253,8 @@ class ScheduleGenerator():
         if self.validate():
             return self.assignment
         slot_index = self.select_unassigned()
-        slot_domain = self.variable_domains[slot_index]
+        # must iterate over both CS and GenEds, so ordering GenEds or CS first with prob 0.5
+        slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.5 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
         cur_nonbinary_domains = list(self.nonbinary_constraint_domains)
@@ -257,5 +278,5 @@ class ScheduleGenerator():
             self.assignment = list(cur_assignment)
             self.variable_domains = list(cur_domains)
             self.nonbinary_constraint_domains = list(cur_nonbinary_domains)
-        print self.assignment
+        # print self.assignment
         return False

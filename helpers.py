@@ -40,7 +40,7 @@ def parse_geneds_single_dict():
                         gen_ed_dict[prev]['days'][int(line[11]) - 1] = True
                     else:
                         gen_ed_dict[int(line[0])] = {
-                            'class_name': geneds[i] + line[4] + line[5],
+                            'class_name': geneds[i] + line[4],
                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
                             'times': [convert_time(line[14].replace(":", "")[0:4]), convert_time(line[15].replace(":", "")[0:4])],
@@ -49,49 +49,49 @@ def parse_geneds_single_dict():
                         prev = int(line[0])
     return gen_ed_dict
 
-def total_class_dict():
-    class_dict = {}
-    # read in CSV file with all course info
-    with open('class_times.csv', 'rb') as csvfile:
-        csvreader = csv.reader(csvfile)
-        next(csvreader, None)
-        for line in csvreader:
-            class_dict[int(line[10])] = {
-                'class_name': line[0],
-                'semester': [line[1] == 'TRUE', line[2] == 'TRUE'],
-                'days': [line[3]  == 'TRUE', line[4]  == 'TRUE', line[5]  == 'TRUE', line[6]  == 'TRUE', line[7]  == 'TRUE'],
-                'times': [float(line[8]), float(line[9])],
-                'gened': 'concentration'
-            }
-
-    geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
-    for i in range(len(geneds)):
-        with open(geneds[i] + '.csv', 'rb') as csvfile:
-            csvreader = csv.reader(csvfile)
-            next(csvreader, None)
-            prev = None
-            for line in csvreader:
-                # mark with catalog number
-                if not line[11] == "":
-                    if line[0] == "":
-                        class_dict[prev]['days'][int(line[11]) - 1] = True
-                    else:
-                        class_dict[int(line[0])] = {
-                            'class_name': geneds[i] + line[4],
-                            'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
-                            'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
-                            'times': [convert_time(line[14].replace(":", "")[0:4]), convert_time(line[15].replace(":", "")[0:4])],
-                            'gened': geneds[i]
-                        }
-                        prev = int(line[0])
-
-    return class_dict
+# def total_class_dict():
+#     class_dict = {}
+#     # read in CSV file with all course info
+#     with open('class_times.csv', 'rb') as csvfile:
+#         csvreader = csv.reader(csvfile)
+#         next(csvreader, None)
+#         for line in csvreader:
+#             class_dict[int(line[10])] = {
+#                 'class_name': line[0],
+#                 'semester': [line[1] == 'TRUE', line[2] == 'TRUE'],
+#                 'days': [line[3]  == 'TRUE', line[4]  == 'TRUE', line[5]  == 'TRUE', line[6]  == 'TRUE', line[7]  == 'TRUE'],
+#                 'times': [float(line[8]), float(line[9])],
+#                 'gened': 'concentration'
+#             }
+#
+#     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
+#     for i in range(len(geneds)):
+#         with open(geneds[i] + '.csv', 'rb') as csvfile:
+#             csvreader = csv.reader(csvfile)
+#             next(csvreader, None)
+#             prev = None
+#             for line in csvreader:
+#                 # mark with catalog number
+#                 if not line[11] == "":
+#                     if line[0] == "":
+#                         class_dict[prev]['days'][int(line[11]) - 1] = True
+#                     else:
+#                         class_dict[int(line[0])] = {
+#                             'class_name': geneds[i] + line[4],
+#                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
+#                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
+#                             'times': [convert_time(line[14].replace(":", "")[0:4]), convert_time(line[15].replace(":", "")[0:4])],
+#                             'gened': geneds[i]
+#                         }
+#                         prev = int(line[0])
+#
+#     return class_dict
 
 def parse_geneds():
     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
     ai_dict, cb_dict, emr_dict, er_dict, sls_dict, sp_dict, spu_dict, sw_dict, usw_dict = {}, {}, {}, {}, {}, {}, {}, {}, {}
     dicts = [ai_dict, cb_dict, emr_dict, er_dict, sls_dict, sp_dict, spu_dict, sw_dict, usw_dict]
-
+    class_dict = {}
     for i in range(len(geneds)):
         with open(geneds[i] + '.csv', 'rb') as csvfile:
             csvreader = csv.reader(csvfile)
@@ -108,7 +108,8 @@ def parse_geneds():
                             'class_name': geneds[i] + line[4],
                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
-                            'times': [line[14].replace(":", "")[0:4], line[15].replace(":", "")[0:4]]
+                            'times': [convert_time(line[14].replace(":", "")[0:4]), convert_time(line[15].replace(":", "")[0:4])],
+                            'gened': geneds[i]
                         }
                         prev = int(line[0])
     return dicts
@@ -489,4 +490,3 @@ def constraint_math1b():
                 a: ci
             })
     return constraints
-

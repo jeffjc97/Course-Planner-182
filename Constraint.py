@@ -1,6 +1,8 @@
 import helpers
 # class_dict = helpers.parse_csv()
-class_dict = helpers.total_class_dict()
+# class_dict = helpers.total_class_dict()
+cs_class_dict = helpers.parse_csv()
+gened_class_dict = helpers.parse_geneds_single_dict()
 
 class ConstraintType():
     OverallConstraint = 1
@@ -30,7 +32,13 @@ class UniqueCoursesConstraint(Constraint):
     def validate(self, x, y, assignment):
         if not assignment[x] or not assignment[y]:
             return True
-        return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
+        # return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
+        if assignment[x] in cs_class_dict and assignment[y] in cs_class_dict:
+            return cs_class_dict[assignment[x]]['class_name'] != cs_class_dict[assignment[y]]['class_name']
+        elif assignment[x] in gened_class_dict and assignment[y] in gened_class_dict:
+            return gened_class_dict[assignment[x]]['class_name'] != gened_class_dict[assignment[y]]['class_name']
+        else:
+            return True
 
 # INCLUDE DAYS!!!
 class OverlappingCoursesConstraint(Constraint):
@@ -40,28 +48,50 @@ class OverlappingCoursesConstraint(Constraint):
     def validate(self, x, y, assignment):
         if not assignment[x] or not assignment[y]:
             return True
-        if helpers.get_slot_from_index(x)['semester'] == helpers.get_slot_from_index(y)['semester']:
-            # do something
-            x_days = class_dict[assignment[x]]['days']
-            y_days = class_dict[assignment[y]]['days']
-            day_overlap = False
-            for day in range(5):
-                if x_days[day] and y_days[day]:
-                    day_overlap = True
-                    break
-            if day_overlap:
-                if class_dict[assignment[x]]['times'][0] < class_dict[assignment[y]]['times'][0]:
-                    first_class = x
-                    second_class = y
-                elif class_dict[assignment[x]]['times'][0] > class_dict[assignment[y]]['times'][0]:
-                    first_class = y
-                    second_class = x
+        # check if courses are in same year
+        if helpers.get_slot_from_index(x)['year'] == helpers.get_slot_from_index(y)['year']:
+            # check if courses are in same semester
+            if helpers.get_slot_from_index(x)['semester'] == helpers.get_slot_from_index(y)['semester']:
+                # do something
+                if assignment[x] in cs_class_dict:
+                    x_days = cs_class_dict[assignment[x]]['days']
+                    x_cs = True
                 else:
-                    return False
-                if class_dict[assignment[first_class]]['times'][1] > class_dict[assignment[second_class]]['times'][0]:
-                    return False
+                    x_days = gened_class_dict[assignment[x]]['days']
+                    x_cs = False
+
+                if assignment[y] in cs_class_dict:
+                    y_days = cs_class_dict[assignment[y]]['days']
+                    y_cs = True
                 else:
-                    return True
-            return True
+                    y_days = gened_class_dict[assignment[y]]['days']
+                    y_cs = False
+                day_overlap = False
+                for day in range(5):
+                    if x_days[day] and y_days[day]:
+                        day_overlap = True
+                        break
+                if day_overlap:
+                    x_times = cs_class_dict[assignment[x]]['times'] if x_cs else gened_class_dict[assignment[x]]['times']
+                    y_times = cs_class_dict[assignment[y]]['times'] if y_cs else gened_class_dict[assignment[y]]['times']
+                    if x_times[0] < y_times[0]:
+                        first_class = x
+                        second_class = y
+                        if x_times[1] > y_times[0]:
+                            return False
+                        else:
+                            return True
+                    elif x_times[0] > y_times[0]:
+                        first_class = y
+                        second_class = x
+                        if y_times[1] > x_times[0]:
+                            return False
+                        else:
+                            return True
+                    else:
+                        return False
+                return True
+            else:
+                return True
         else:
             return True

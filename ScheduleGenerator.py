@@ -1,11 +1,11 @@
 from Constraint import *
 from collections import deque
-import random
+import random, sys
 
 total_slots = 32
 slots_per_semester = 4
 class ScheduleGenerator():
-    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs):
+    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs, check_gened = False):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
@@ -16,8 +16,13 @@ class ScheduleGenerator():
         self.fixed = []
         self.cs_classes = cs_class_dict
         self.gened_classes = gened_class_dict
+        self.check_gened = check_gened
         self.params = params
         self.prereqs = prereqs
+        self.ai_cb = False
+        self.er = False
+        self.spu_sls = False
+        self.sw_usw = False
         self.populate_nonbinary()
         self.process_params()
         self.init_domains()
@@ -73,11 +78,14 @@ class ScheduleGenerator():
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
-            helpers.constraint_gen_ed_ai_cb(),
-            helpers.constraint_gen_ed_er(),
-            helpers.constraint_gen_ed_sls_spu(),
-            helpers.constraint_gen_ed_sw_usw(),
         ]
+        if self.check_gened:
+            self.nonbinary_constraint_domains += [
+                helpers.constraint_gen_ed_ai_cb(),
+                helpers.constraint_gen_ed_er(),
+                helpers.constraint_gen_ed_sls_spu(),
+                helpers.constraint_gen_ed_sw_usw()
+            ]
         # print self.nonbinary_constraint_domains
         return
 
@@ -93,26 +101,27 @@ class ScheduleGenerator():
                 for slot in self.get_semester_slots(1):
                     self.variable_domains[slot][0].append(course)
 
-        # adding GenEds into their respective semester's slots
-        for course in self.gened_classes:
-            if self.gened_classes[course]['semester'][0]:
-                for slot in self.get_semester_slots(0):
-                    self.variable_domains[slot][1].append(course)
-            if self.gened_classes[course]['semester'][1]:
-                for slot in self.get_semester_slots(1):
-                    self.variable_domains[slot][1].append(course)
+        if self.check_gened:
+            # adding GenEds into their respective semester's slots
+            for course in self.gened_classes:
+                if self.gened_classes[course]['semester'][0]:
+                    for slot in self.get_semester_slots(0):
+                        self.variable_domains[slot][1].append(course)
+                if self.gened_classes[course]['semester'][1]:
+                    for slot in self.get_semester_slots(1):
+                        self.variable_domains[slot][1].append(course)
 
         # prioritizing math class preference
-        for slot in self.variable_domains:
-            new_preferred = self.params['preferred_classes'] + ['MATH'+self.params['linalg']] + ['MATH'+self.params['multi']]
-            for course in new_preferred:
-                if course in slot[0]:
-                    slot[0].remove(course)
-                    slot[0].appendleft(course)
-            for course in self.params['disliked_classes']:
-                if course in slot[0]:
-                    slot[0].remove(course)
-                    slot[0].append(course)
+        # for slot in self.variable_domains:
+        #     new_preferred = self.params['preferred_classes'] + ['MATH'+self.params['linalg']] + ['MATH'+self.params['multi']]
+        #     for course in new_preferred:
+        #         if course in slot[0]:
+        #             slot[0].remove(course)
+        #             slot[0].appendleft(course)
+        #     for course in self.params['disliked_classes']:
+        #         if course in slot[0]:
+        #             slot[0].remove(course)
+        #             slot[0].append(course)
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
@@ -264,17 +273,47 @@ class ScheduleGenerator():
         if self.get_cs_count(slot_index) >= self.params['max']:
             # if we've reached the limit of concentration classes, only select gen eds
             print "NEED TO SELECT GEN ED"
-            slot_domain = list(self.variable_domains[slot_index][1])
+            slot_domain = [sys.maxint]
+
         else:
             # must iterate over both CS and GenEds, so ordering GenEds or CS first with prob 0.5
             slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.5 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
+
+        # iterate through GenEds, removing ones that have been fulfilled
+        for course in slot_domain:
+            if course in self.gened_classes:
+                if (self.gened_classes[course]['gened'] == 'AI' or self.gened_classes[course]['gened'] == 'CB') and self.ai_cb:
+                    slot_domain.remove(course)
+                elif self.gened_classes[course]['gened'] == 'ER' and self.er:
+                    slot_domain.remove(course)
+                elif (self.gened_classes[course]['gened'] == 'SPU' or self.gened_classes[course]['gened'] == 'SLS') and self.spu_sls:
+                    slot_domain.remove(course)
+                elif (self.gened_classes[course]['gened'] == 'SW' or self.gened_classes[course]['gened'] == 'USW') and self.sw_usw:
+                    slot_domain.remove(course)
+
+        print "!!!!!"
+        print slot_domain
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
         cur_nonbinary_domains = list(self.nonbinary_constraint_domains)
+        cur_geneds = list([self.ai_cb, self.er, self.spu_sls, self.sw_usw])
+
         for value in slot_domain:
             if self.try_validate(slot_index, value):
                 self.assignment[slot_index] = value
+
                 print self.assignment
+                # check which GenEd has been assigned, and set class variable to True
+                if value in self.gened_classes:
+                    if self.gened_classes[value]['gened'] == 'AI' or self.gened_classes[value]['gened'] == 'CB':
+                        self.ai_cb = True
+                    elif self.gened_classes[value]['gened'] == 'ER':
+                        self.er = True
+                    elif self.gened_classes[value]['gened'] == 'SPU' or self.gened_classes[value]['gened'] == 'SLS':
+                        self.spu_sls = True
+                    elif self.gened_classes[value]['gened'] == 'SW' or self.gened_classes[value]['gened'] == 'USW':
+                        self.sw_usw = True
+
                 for cd_i, constraint_domain in enumerate(self.nonbinary_constraint_domains):
                     cd = list(constraint_domain)
                     for i, val_dict in enumerate(constraint_domain):
@@ -288,6 +327,12 @@ class ScheduleGenerator():
                     result = self.backtrack()
                     if result:
                         return result
+            # reset the GenEd fulfillment class variables
+            cur_geneds_copy = list(cur_geneds)
+            self.ai_cb = cur_geneds_copy[0]
+            self.er = cur_geneds_copy[1]
+            self.spu_sls = cur_geneds_copy[2]
+            self.sw_usw = cur_geneds_copy[3]
             self.assignment = list(cur_assignment)
             self.variable_domains = list(cur_domains)
             self.nonbinary_constraint_domains = list(cur_nonbinary_domains)

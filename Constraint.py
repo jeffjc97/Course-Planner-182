@@ -1,4 +1,4 @@
-import helpers
+import helpers, sys
 # class_dict = helpers.parse_csv()
 # class_dict = helpers.total_class_dict()
 cs_class_dict = helpers.parse_csv()
@@ -30,6 +30,8 @@ class UniqueCoursesConstraint(Constraint):
         self.constraint_type = ConstraintType.BinaryConstraint
 
     def validate(self, x, y, assignment):
+        if assignment[x] == sys.maxint or assignment[y] == sys.maxint:
+            return True
         if not assignment[x] or not assignment[y]:
             return True
         # return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
@@ -46,6 +48,8 @@ class OverlappingCoursesConstraint(Constraint):
         self.constraint_type = ConstraintType.BinaryConstraint
 
     def validate(self, x, y, assignment):
+        if assignment[x] == sys.maxint or assignment[y] == sys.maxint:
+            return True
         if not assignment[x] or not assignment[y]:
             return True
         # check if courses are in same year
@@ -75,15 +79,11 @@ class OverlappingCoursesConstraint(Constraint):
                     x_times = cs_class_dict[assignment[x]]['times'] if x_cs else gened_class_dict[assignment[x]]['times']
                     y_times = cs_class_dict[assignment[y]]['times'] if y_cs else gened_class_dict[assignment[y]]['times']
                     if x_times[0] < y_times[0]:
-                        first_class = x
-                        second_class = y
                         if x_times[1] > y_times[0]:
                             return False
                         else:
                             return True
                     elif x_times[0] > y_times[0]:
-                        first_class = y
-                        second_class = x
                         if y_times[1] > x_times[0]:
                             return False
                         else:
@@ -91,7 +91,5 @@ class OverlappingCoursesConstraint(Constraint):
                     else:
                         return False
                 return True
-            else:
-                return True
-        else:
             return True
+        return True

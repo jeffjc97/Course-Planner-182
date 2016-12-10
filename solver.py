@@ -71,14 +71,15 @@ params = {}
 #     params['disliked_classes'] = raw_input().upper().split()
 
 # hardcoded input
+#SPU 14
 preferred_classes = [1]
-disliked_classes = [62]
+disliked_classes = [15]
 params['math1a'] = 0
 params['math1b'] = 1
 params['multi'] = '23b'
 params['linalg'] = '23a'
 params['expos'] = 0
-params['max'] = 2
+params['max'] = 3
 params['preferred_classes'] = ['CS50']
 params['disliked_classes'] = ['CS161']
 sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)
@@ -89,8 +90,10 @@ course_names = []
 for course_id in result:
     if course_id in cs_class_dict:
         course_names.append(cs_class_dict[course_id]["class_name"])
-    else:
+    elif course_id in gened_class_dict:
         course_names.append(gened_class_dict[course_id]["class_name"])
+    else:
+        course_names.append("____")
 
 def get_year(x):
     return {

@@ -81,7 +81,6 @@ while params['check_gened'] not in ['yes', 'no']:
     print 'Invalid input. Select from Yes or No'
     params['check_gened'] = raw_input().lower()
 params['check_gened'] = params['check_gened'] == "yes"
-print params['check_gened']
 
 # hardcoded input, for testing
 # params['math1a'] = 0

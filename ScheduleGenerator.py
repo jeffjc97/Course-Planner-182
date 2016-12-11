@@ -151,7 +151,7 @@ class ScheduleGenerator():
         # now checking constraint domains for nonbinary
         for d_i, domain in enumerate(constraint_domains):
             if len(domain) == 0:
-                # print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
+                print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
                 return False
         return True
 
@@ -273,11 +273,14 @@ class ScheduleGenerator():
         slot_index = self.select_unassigned()
         if self.get_cs_count(slot_index) >= self.params['max']:
             # if we've reached the limit of concentration classes, only select gen eds
-            slot_domain = [sys.maxint]
+            if self.params['check_gened']:
+                slot_domain = list(self.variable_domains[slot_index][1])
+            else:
+                slot_domain = [sys.maxint]
 
         else:
             # must iterate over both CS and GenEds, so ordering GenEds or CS first with prob 0.5
-            slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.5 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
+            slot_domain = list(self.variable_domains[slot_index][0])+list(self.variable_domains[slot_index][1]) if random.random() > 0.3 else list(self.variable_domains[slot_index][1]) + list(self.variable_domains[slot_index][0])
 
         # iterate through GenEds, removing ones that have been fulfilled
         for course in slot_domain:

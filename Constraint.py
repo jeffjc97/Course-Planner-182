@@ -1,6 +1,4 @@
 import helpers, sys
-# class_dict = helpers.parse_csv()
-# class_dict = helpers.total_class_dict()
 cs_class_dict = helpers.parse_csv()
 gened_class_dict = helpers.parse_geneds_single_dict()
 
@@ -34,7 +32,6 @@ class UniqueCoursesConstraint(Constraint):
             return True
         if not assignment[x] or not assignment[y]:
             return True
-        # return class_dict[assignment[x]]['class_name'] != class_dict[assignment[y]]['class_name']
         if assignment[x] in cs_class_dict and assignment[y] in cs_class_dict:
             return cs_class_dict[assignment[x]]['class_name'] != cs_class_dict[assignment[y]]['class_name']
         elif assignment[x] in gened_class_dict and assignment[y] in gened_class_dict:
@@ -42,7 +39,6 @@ class UniqueCoursesConstraint(Constraint):
         else:
             return True
 
-# INCLUDE DAYS!!!
 class OverlappingCoursesConstraint(Constraint):
     def __init__ (self):
         self.constraint_type = ConstraintType.BinaryConstraint

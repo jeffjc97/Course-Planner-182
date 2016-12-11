@@ -19,10 +19,7 @@ class ScheduleGenerator():
         self.check_gened = check_gened
         self.params = params
         self.prereqs = prereqs
-        self.ai_cb = False
-        self.er = False
-        self.spu_sls = False
-        self.sw_usw = False
+        self.ai_cb, self.er, self.spu_sls, self.sw_usw = False, False, False, False
         self.populate_nonbinary()
         self.process_params()
         self.init_domains()
@@ -37,7 +34,6 @@ class ScheduleGenerator():
     def get_course(self, year, semester, slot):
         return self.assignment[self.get_course_index(year, semester, slot)]
 
-    # TODO add custom constraints
     def process_params(self):
         # Fixing expos course time
         if self.params['expos'] == 0:
@@ -111,9 +107,8 @@ class ScheduleGenerator():
                     for slot in self.get_semester_slots(1):
                         self.variable_domains[slot][1].append(course)
 
-        # prioritizing math class preference
+        # prioritizing class preference
         lookup_dict = helpers.get_course_id_dict()
-
         for slot in self.variable_domains:
             new_preferred = self.params['preferred_classes'] + [self.params['linalg']] + [self.params['multi']]
             for preference in new_preferred:
@@ -163,7 +158,6 @@ class ScheduleGenerator():
                     return False
 
         # updating constraint domains
-        # TODO AM I SUPPOSED TO DO THIS HERE??
         for cd_i, constraint_domain in enumerate(nonbinary_constraint_domains):
             cd = list(constraint_domain)
             for i, val_dict in enumerate(constraint_domain):
@@ -229,14 +223,6 @@ class ScheduleGenerator():
                     self.variable_domains[i][0].remove(x)
                 else:
                     self.variable_domains[i][1].remove(x)
-                # also remove all possible constraint domain options that had val x for slot i
-                # for constraint_domain in self.nonbinary_constraint_domains:
-                #     for dict_i, val_dict in enumerate(constraint_domain):
-                #         if i in val_dict:
-                #             if val_dict[i] == x:
-                #                 # remove this from domain
-                #                 del constraint_domain[dict_i]
-                #                 break
                 for cd_i, constraint_domain in enumerate(self.nonbinary_constraint_domains):
                     cd = list(constraint_domain)
                     for dict_i, val_dict in enumerate(constraint_domain):
@@ -296,7 +282,6 @@ class ScheduleGenerator():
                 elif (self.gened_classes[course]['gened'] == 'SW' or self.gened_classes[course]['gened'] == 'USW') and self.sw_usw:
                     slot_domain.remove(course)
 
-        print "!!!!!"
         print slot_domain
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
@@ -341,5 +326,4 @@ class ScheduleGenerator():
             self.assignment = list(cur_assignment)
             self.variable_domains = list(cur_domains)
             self.nonbinary_constraint_domains = list(cur_nonbinary_domains)
-        # print self.assignment
         return False

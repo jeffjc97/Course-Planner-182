@@ -49,44 +49,6 @@ def parse_geneds_single_dict():
                         prev = int(line[0])
     return gen_ed_dict
 
-# def total_class_dict():
-#     class_dict = {}
-#     # read in CSV file with all course info
-#     with open('class_times.csv', 'rb') as csvfile:
-#         csvreader = csv.reader(csvfile)
-#         next(csvreader, None)
-#         for line in csvreader:
-#             class_dict[int(line[10])] = {
-#                 'class_name': line[0],
-#                 'semester': [line[1] == 'TRUE', line[2] == 'TRUE'],
-#                 'days': [line[3]  == 'TRUE', line[4]  == 'TRUE', line[5]  == 'TRUE', line[6]  == 'TRUE', line[7]  == 'TRUE'],
-#                 'times': [float(line[8]), float(line[9])],
-#                 'gened': 'concentration'
-#             }
-#
-#     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
-#     for i in range(len(geneds)):
-#         with open(geneds[i] + '.csv', 'rb') as csvfile:
-#             csvreader = csv.reader(csvfile)
-#             next(csvreader, None)
-#             prev = None
-#             for line in csvreader:
-#                 # mark with catalog number
-#                 if not line[11] == "":
-#                     if line[0] == "":
-#                         class_dict[prev]['days'][int(line[11]) - 1] = True
-#                     else:
-#                         class_dict[int(line[0])] = {
-#                             'class_name': geneds[i] + line[4],
-#                             'semester': [line[1] == 'FALL', line[1] == 'SPRING'],
-#                             'days': [line[11]  == '1', line[11]  == '2', line[11]  == '3', line[11]  == '4', line[11]  == '5'],
-#                             'times': [convert_time(line[14].replace(":", "")[0:4]), convert_time(line[15].replace(":", "")[0:4])],
-#                             'gened': geneds[i]
-#                         }
-#                         prev = int(line[0])
-#
-#     return class_dict
-
 def parse_geneds():
     geneds = ["AI", "CB", "EMR", "ER", "SLS", "SP", "SPU", "SW", "USW"]
     ai_dict, cb_dict, emr_dict, er_dict, sls_dict, sp_dict, spu_dict, sw_dict, usw_dict = {}, {}, {}, {}, {}, {}, {}, {}, {}
@@ -135,7 +97,6 @@ def get_slot_from_index(index):
         'slot': slot
     }
 
-# TODO: Add Stat and Math prereqs once they're added into the general domain
 def get_prereqs():
     return {
         # CS61: CS50
@@ -145,18 +106,11 @@ def get_prereqs():
         # CS109B: CS109A
         7: [6],
         # CS121: Discrete Math (CS20)
-        # CS124: CS50, (CS121, Formal math, AM106, AM107, STAT110 is helpful)
         10: [1],
-        # CS125: Comfort with Math 25, 55
-        # CS127: (comfort with proofs at the level of CS121, CS124)
-        # CS134: (Linear Algebra, Multivariable Calculus, STAT110)
-        # 12: [63]
-        # CS136: (Applied Math 21b, Computer Science 51 or equivalent, Statistics 110, and one of Computer Science 181, Computer Science 182, Economics 1011a, Economics 1052, or Economics 1056.)
         # CS141: programming experience
         14: [1],
         # CS143: CS50 recommended
         15: [1],
-        # CS146: None
         # CS148: CS141
         18: [14],
         # CS152: CS51, CS121
@@ -165,20 +119,16 @@ def get_prereqs():
         20: [2, 3],
         # CS161: CS61
         21: [3],
-        # CS164: Any four courses numbered 50 or higher
         # CS165: CS51, CS61
         23: [2, 3],
         # CS171: (CS50 programming experience)
         24: [1],
-        # CS175: CS51 or CS61 + Linear Algebra
         # CS179: (CS50 programming experience)
         26: [1],
         # CS181: CS51, CS121, STAT110, Linear Algebra, Multivariable Calculus
         27: [2, 8, 63],
         # CS182: CS51, CS121
         28: [2, 8],
-        # CS187: CS51, CS121 (not offered)
-        # CS189: None
     }
 
 # slot_index: course_id
@@ -254,7 +204,6 @@ def constraint_cs121_cs125():
             })
     return constraints
 
-# todo 124 125 constraint
 def constraint_cs124_cs127_apmth106_apmth107():
     constraints = []
     id_from_course = {
@@ -279,76 +228,6 @@ def constraint_cs124_cs127_apmth106_apmth107():
                 a: id_from_course[107]
             })
     return constraints
-
-# Math constraints
-# def constraint_math():
-#     constraints = []
-#     # 21a/b are offered both semesters in weird times;
-#     # 23a, 25a, 55a --> Fall // 23b, 25b, 55b --> Spring
-#     # (Multivariable Calculus FALL, Linear Algebra SPRING)
-#     # (21a, 21b), (21a, 23a), (21a, 25a), (21a, 55a)
-#     # (23b, 21b), (23b, 23a), (23b, 25a), (23b, 55a)
-#     # (25b, 21b), (25b, 23a), (25b, 25a), (25b, 55a)
-#     # (55b, 21b), (55b, 23a), (55b, 25a), (55b, 55a)
-#     # OR you can take 21b in the fall and 21a in the spring (21b, 21a)
-
-#     id_from_course = {
-#         "21a1": 38,
-#         "21a2": 39,
-#         "21a3": 40,
-#         "21a4": 41,
-#         "21a5": 42,
-#         "21a6": 43,
-#         "21b1": 44,
-#         "21b2": 45,
-#         "21b3": 46,
-#         "21b4": 47,
-#         "23a": 48,
-#         "23b": 49,
-#         "25a": 50,
-#         "25b": 51,
-#         "55a": 52,
-#         "55b": 53
-#     }
-#     classes = ["21a", "21b", "23a", "23b", "25a", "25b", "55a", "55b"]
-
-#     # 21b/a combination dealt with later
-#     fall_classes = ['21a', '23a', '25a', '55a']
-#     spring_classes = ['21b', '23b', '25b', '55b']
-
-#     for a in range(total_slots):
-#         for b in range(a+1, total_slots):
-#             a_time = get_slot_from_index(a)
-#             b_time = get_slot_from_index(b)
-
-#             # a: fall, b: spring
-#             if a_time['semester'] == 0 and b_time['semester'] == 1:
-#                 for fall in fall_classes:
-#                     for spring in spring_classes:
-#                         if fall == "21a":
-#                             for x in range(1,7):
-#                                 if spring == "21b":
-#                                     for y in range(1,5):
-#                                         constraints.append( {a: id_from_course[fall + str(x)], b: id_from_course[spring + str(y)]} )
-#                                         # print a, fall + str(x), ", ", b, spring + str(y)
-#                                 else:
-#                                     constraints.append( {a: id_from_course[fall + str(x)], b: id_from_course[spring]} )
-#                                     # print a, fall + str(x), ", ", b, spring
-#                         elif spring == "21b":
-#                             for y in range(1,5):
-#                                 constraints.append( {a: id_from_course[fall], b: id_from_course[spring + str(y)]} )
-#                                 # print a, fall, ", ", b, spring + str(y)
-#                         else:
-#                                 constraints.append( {a: id_from_course[fall], b: id_from_course[spring]} )
-#                                 # print a, fall, ", ", b, spring
-
-#             # a: Spring, b: Fall, so only 21b,21a
-#             elif a_time['semester'] == 1 and b_time['semester'] == 0:
-#                 for x in range(1,7):
-#                     for y in range(1,5):
-#                         constraints.append( {a: id_from_course['21b' + str(y)], b: id_from_course['21a' + str(x)]} )
-#     return constraints
-# # print len(constraint_math())
 
 def constraint_math(linalg, multi):
     # linalg: 21b, 23a, 25a, 55a

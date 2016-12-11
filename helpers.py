@@ -356,17 +356,17 @@ def constraint_math(linalg, multi):
 
     constraints = []
     id_from_course = {
-        "21a": [38, 39, 40, 41, 42, 43],
-        "21b": [44, 45, 46, 47],
-        "23a": [48],
-        "23b": [49],
-        "25a": [50],
-        "25b": [51],
-        "55a": [52],
-        "55b": [53]
+        "MATH21A": [38, 39, 40, 41, 42, 43],
+        "MATH21B": [44, 45, 46, 47],
+        "MATH23A": [48],
+        "MATH23B": [49],
+        "MATH25A": [50],
+        "MATH25B": [51],
+        "MATH55A": [52],
+        "MATH55B": [53]
     }
 
-    fall_classes = ['21a', '23a', '25a', '55a']
+    fall_classes = ['MATH21A', 'MATH23A', 'MATH25A', 'MATH55A']
     linalg_sem = 0 if linalg in fall_classes else 1
     multi_sem = 0 if multi in fall_classes else 1
 

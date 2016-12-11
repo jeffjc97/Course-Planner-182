@@ -55,14 +55,14 @@ class ScheduleGenerator():
         self.nonbinary_constraint_domains += helpers.constraint_math(self.params['linalg'], self.params['multi'])
 
         id_from_course = {
-            "21a": [38, 39, 40, 41, 42, 43],
-            "21b": [44, 45, 46, 47],
-            "23a": [48],
-            "23b": [49],
-            "25a": [50],
-            "25b": [51],
-            "55a": [52],
-            "55b": [53]
+            "MATH21A": [38, 39, 40, 41, 42, 43],
+            "MATH21B": [44, 45, 46, 47],
+            "MATH23A": [48],
+            "MATH23B": [49],
+            "MATH25A": [50],
+            "MATH25B": [51],
+            "MATH55A": [52],
+            "MATH55B": [53]
         }
         for c_name in id_from_course:
             if c_name != self.params['linalg'] and c_name != self.params['multi']:
@@ -112,16 +112,21 @@ class ScheduleGenerator():
                         self.variable_domains[slot][1].append(course)
 
         # prioritizing math class preference
-        # for slot in self.variable_domains:
-        #     new_preferred = self.params['preferred_classes'] + ['MATH'+self.params['linalg']] + ['MATH'+self.params['multi']]
-        #     for course in new_preferred:
-        #         if course in slot[0]:
-        #             slot[0].remove(course)
-        #             slot[0].appendleft(course)
-        #     for course in self.params['disliked_classes']:
-        #         if course in slot[0]:
-        #             slot[0].remove(course)
-        #             slot[0].append(course)
+        lookup_dict = helpers.get_course_id_dict()
+
+        for slot in self.variable_domains:
+            new_preferred = self.params['preferred_classes'] + [self.params['linalg']] + [self.params['multi']]
+            for preference in new_preferred:
+                course = lookup_dict[preference]
+                if course in slot[0]:
+                    slot[0].remove(course)
+                    slot[0].appendleft(course)
+            for disliked in self.params['disliked_classes']:
+                course = lookup_dict[disliked]
+                if course in slot[0]:
+                    slot[0].remove(course)
+                    slot[0].append(course)
+
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied

@@ -32,17 +32,17 @@ params = {}
 #     math1b = raw_input().lower()
 # params['math1b'] = 0 if math1b == 'no' else 1
 #
-# print 'What math do you want to take for Multivariable Calculus? (Type 21a, 23b, 25b, 55b)'
-# params['multi'] = raw_input()
-# while params['multi'] not in ['21a', '23b', '25b', '55b']:
-#     print 'Invalid input. Select from 21a, 23b, 25b, or 55b'
-#     params['multi'] = raw_input()
+# print 'What math do you want to take for Multivariable Calculus? (Type Math21a, Math23b, Math25b, Math55b)'
+# params['multi'] = raw_input().upper()
+# while params['multi'] not in ['MATH21A', 'MATH23B', 'MATH25B', 'MATH55B']:
+#     print 'Invalid input. Select from Math21a, Math23b, Math25b, Math55b'
+#     params['multi'] = raw_input().upper()
 #
-# print 'What math do you want to take for Linear Algebra? (Type 21b, 23a, 25a, 55a)'
-# params['linalg'] = raw_input()
-# while params['linalg'] not in ['21b', '23a', '25a', '55a']:
-#     print 'Invalid input. Select from 21b, 23a, 25a, or 55a'
-#     params['linalg'] = raw_input()
+# print 'What math do you want to take for Linear Algebra? (Type Math21b, Math23a, Math25a, Math55a)'
+# params['linalg'] = raw_input().upper()
+# while params['linalg'] not in ['MATH21B', 'MATH23A', 'MATH25A', 'MATH55A']:
+#     print 'Invalid input. Select from Math21b, Math23a, Math25a, or Math55a'
+#     params['linalg'] = raw_input().upper()
 #
 # print 'What semester to take expos? (Fall or Spring)'
 # expos = raw_input().lower()
@@ -58,13 +58,13 @@ params = {}
 #     params['max'] = raw_input()
 # params['max'] = int(params['max'])
 #
-# print 'What clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+# print 'What CS clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
 # params['preferred_classes'] = raw_input().upper().split()
 # while not valid_courses(params['preferred_classes']):
 #     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces.'
 #     params['preferred_classes'] = raw_input().upper().split()
 #
-# print 'What clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+# print 'What CS clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces.'
 # params['disliked_classes'] = raw_input().upper().split()
 # while not valid_courses(params['disliked_classes']) or len(set(params['preferred_classes']) & set(params['disliked_classes'])) != 0:
 #     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces. These courses cannot overlap with your preferred courses.'
@@ -72,16 +72,16 @@ params = {}
 
 # hardcoded input
 #SPU 14
-preferred_classes = [1]
-disliked_classes = [15]
+preferred_classes = [21]
+disliked_classes = [5]
 params['math1a'] = 0
 params['math1b'] = 1
-params['multi'] = '23b'
-params['linalg'] = '23a'
+params['multi'] = 'MATH23B'
+params['linalg'] = 'MATH23A'
 params['expos'] = 0
 params['max'] = 3
-params['preferred_classes'] = ['CS50']
-params['disliked_classes'] = ['CS161']
+params['preferred_classes'] = ['CS161']
+params['disliked_classes'] = ['CS108']
 sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)
 
 result = sg.backtrack()

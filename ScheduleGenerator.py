@@ -12,7 +12,7 @@ slots_per_semester = 4
 
 
 class ScheduleGenerator():
-    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs, check_gened=False):
+    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
@@ -23,7 +23,6 @@ class ScheduleGenerator():
         self.fixed = []
         self.cs_classes = cs_class_dict
         self.gened_classes = gened_class_dict
-        self.check_gened = check_gened
         self.params = params
         self.prereqs = prereqs
         self.ai_cb, self.er, self.spu_sls, self.sw_usw = False, False, False, False
@@ -86,7 +85,7 @@ class ScheduleGenerator():
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
         ]
-        if self.check_gened:
+        if self.params["check_gened"]:
             # all constraints concerning gen eds
             self.nonbinary_constraint_domains += [
                 helpers.constraint_gen_ed_ai_cb(),
@@ -108,7 +107,7 @@ class ScheduleGenerator():
                 for slot in self.get_semester_slots(1):
                     self.variable_domains[slot][0].append(course)
 
-        if self.check_gened:
+        if self.params["check_gened"]:
             # adding GenEds into their respective semester's slots
             for course in self.gened_classes:
                 if self.gened_classes[course]['semester'][0]:

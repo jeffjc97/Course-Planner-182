@@ -280,12 +280,16 @@ def constraint_math(linalg, multi):
     fall_classes = ['MATH21A', 'MATH23A', 'MATH25A', 'MATH55A']
     linalg_sem = 0 if linalg in fall_classes else 1
     multi_sem = 0 if multi in fall_classes else 1
+    if linalg == 'MATH21B':
+        linalg_sem = 2
+    if multi == 'MATH21A':
+        multi_sem = 2
 
     # linalg constraints
     linalg_constraints = []
     for a in range(total_slots):
         a_time = get_slot_from_index(a)
-        if a_time['semester'] == linalg_sem:
+        if a_time['semester'] == linalg_sem or linalg_sem == 2:
             for c_id in id_from_course[linalg]:
                 linalg_constraints.append({
                     a: c_id
@@ -295,7 +299,7 @@ def constraint_math(linalg, multi):
     multi_constraints = []
     for a in range(total_slots):
         a_time = get_slot_from_index(a)
-        if a_time['semester'] == multi_sem:
+        if a_time['semester'] == multi_sem or multi_sem == 2:
             for c_id in id_from_course[multi]:
                 multi_constraints.append({
                     a: c_id

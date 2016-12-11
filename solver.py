@@ -63,17 +63,25 @@ while params['max'] not in ['2', '3', '4']:
     params['max'] = raw_input()
 params['max'] = int(params['max'])
 
-print 'What CS clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+print 'What CS clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces, or simply press return if you have no specific preferences.'
 params['preferred_classes'] = raw_input().upper().split()
 while not valid_courses(params['preferred_classes']):
     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces.'
     params['preferred_classes'] = raw_input().upper().split()
 
-print 'What CS clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+print 'What CS clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces, or simply press return if you have no specific preferences.'
 params['disliked_classes'] = raw_input().upper().split()
 while not valid_courses(params['disliked_classes']) or len(set(params['preferred_classes']) & set(params['disliked_classes'])) != 0:
     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces. These courses cannot overlap with your preferred courses.'
     params['disliked_classes'] = raw_input().upper().split()
+
+print 'Would you like me to choose Gen Ed courses for you? (Type Yes or No)'
+params['check_gened'] = raw_input().lower()
+while params['check_gened'] not in ['yes', 'no']:
+    print 'Invalid input. Select from Yes or No'
+    params['check_gened'] = raw_input().lower()
+params['check_gened'] = params['check_gened'] == "yes"
+print params['check_gened']
 
 # hardcoded input, for testing
 # params['math1a'] = 0
@@ -84,6 +92,7 @@ while not valid_courses(params['disliked_classes']) or len(set(params['preferred
 # params['max'] = 3
 # params['preferred_classes'] = ['CS161']
 # params['disliked_classes'] = ['CS108']
+# params["check_gened"] = False
 
 # GENERATE SCHEDULE!!
 sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)

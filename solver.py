@@ -5,17 +5,18 @@ import helpers
 cs_class_dict = helpers.parse_csv()
 gened_class_dict = helpers.parse_geneds_single_dict()
 
-
 # class_dict = helpers.total_class_dict()
 id_dict = helpers.get_course_id_dict()
 prereqs = helpers.get_prereqs()
 
+# check if course entered is a real course
 def valid_courses(course_list):
     for course in course_list:
         if course not in id_dict:
             return False
     return True
 
+# getting user preferences
 params = {}
 
 # print 'Do you need to take Math 1a? (Type Yes or No)'
@@ -70,10 +71,7 @@ params = {}
 #     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces. These courses cannot overlap with your preferred courses.'
 #     params['disliked_classes'] = raw_input().upper().split()
 
-# hardcoded input
-#SPU 14
-preferred_classes = [21]
-disliked_classes = [5]
+# hardcoded input, for testing
 params['math1a'] = 0
 params['math1b'] = 1
 params['multi'] = 'MATH23B'
@@ -82,10 +80,13 @@ params['expos'] = 0
 params['max'] = 3
 params['preferred_classes'] = ['CS161']
 params['disliked_classes'] = ['CS108']
-sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)
 
+# GENERATE SCHEDULE!!
+sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)
 result = sg.backtrack()
 
+# parse output into nice format
+# get course names instead of course IDs
 course_names = []
 for course_id in result:
     if course_id in cs_class_dict:
@@ -103,6 +104,7 @@ def get_year(x):
         32: "Senior Year"
     }[x]
 
+# output formatted results
 print "Your Course Schedule:\n"
 print "                |                Fall                  ||               Spring               "
 print "---------------------------------------------------------------------------------------------"

@@ -1,11 +1,14 @@
+import sys
+import random
 from Constraint import *
 from collections import deque
-import random, sys
 
 total_slots = 32
 slots_per_semester = 4
+
+
 class ScheduleGenerator():
-    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs, check_gened = False):
+    def __init__(self, params, cs_class_dict, gened_class_dict, prereqs, check_gened=False):
         # [fresh fall 1, fresh fall 2, ..., fresh spring 1, fresh spring 2, ..., senior spring 6]
         self.assignment = [None for _ in xrange(total_slots)]
         self.constraints = [NumCoursesConstraint(), UniqueCoursesConstraint(), OverlappingCoursesConstraint()]
@@ -43,11 +46,13 @@ class ScheduleGenerator():
             self.assignment[4] = -1
             self.fixed.append(4)
 
+        # if they need math 1a or 1b
         if self.params['math1a']:
             self.nonbinary_constraint_domains.append(helpers.constraint_math1a())
         if self.params['math1b']:
             self.nonbinary_constraint_domains.append(helpers.constraint_math1b())
 
+        # linalg/multi requirements
         self.nonbinary_constraint_domains += helpers.constraint_math(self.params['linalg'], self.params['multi'])
 
         id_from_course = {
@@ -60,6 +65,7 @@ class ScheduleGenerator():
             "MATH55A": [52],
             "MATH55B": [53]
         }
+        # removing other courses from domains, as they shouldn't be taking multiple
         for c_name in id_from_course:
             if c_name != self.params['linalg'] and c_name != self.params['multi']:
                 for c_id in id_from_course[c_name]:
@@ -71,18 +77,19 @@ class ScheduleGenerator():
     # list of dictionaries for each constraint
     def populate_nonbinary(self):
         self.nonbinary_constraint_domains = [
+            # CS concentration requirements
             helpers.constraint_cs50_cs51_cs61(),
             helpers.constraint_cs121_cs125(),
             helpers.constraint_cs124_cs127_apmth106_apmth107(),
         ]
         if self.check_gened:
+            # all constraints concerning gen eds
             self.nonbinary_constraint_domains += [
                 helpers.constraint_gen_ed_ai_cb(),
                 helpers.constraint_gen_ed_er(),
                 helpers.constraint_gen_ed_sls_spu(),
                 helpers.constraint_gen_ed_sw_usw()
             ]
-        # print self.nonbinary_constraint_domains
         return
 
     # initialize domains to all of the classes that meet during the slot's semeste
@@ -122,10 +129,9 @@ class ScheduleGenerator():
                     slot[0].remove(course)
                     slot[0].append(course)
 
-
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
-    def validate(self, new_assignment = None, new_constraint_domain = None, all_constraints = True):
+    def validate(self, new_assignment=None, new_constraint_domain=None, all_constraints=True):
         assignment = new_assignment if new_assignment else list(self.assignment)
         constraint_domains = new_constraint_domain if new_constraint_domain else list(self.nonbinary_constraint_domains)
         for constraint in self.constraints:
@@ -142,7 +148,7 @@ class ScheduleGenerator():
         # now checking constraint domains for nonbinary
         for d_i, domain in enumerate(constraint_domains):
             if len(domain) == 0:
-                print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
+                # print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
                 return False
         return True
 
@@ -181,13 +187,14 @@ class ScheduleGenerator():
 
     # get indices of all slots for a semester
     # Semester = {0:fall, 1:spring}
-    def get_semester_slots(self,semester):
+    def get_semester_slots(self, semester):
         slots = []
         for year in range(total_slots/(slots_per_semester * 2)):
             for slot in range(slots_per_semester):
                 slots.append(self.get_course_index(year, semester, slot))
         return slots
 
+    # get the number of concentration classes in the semester of the course index
     def get_cs_count(self, index):
         semester_start_index = slots_per_semester * (index / slots_per_semester)
         counter = 0
@@ -234,36 +241,35 @@ class ScheduleGenerator():
                 revised = True
         return revised
 
+    # AC3 algorithm
     def ac3(self):
         queue = deque()
         # populating all arcs
         for x in range(total_slots):
             for y in range(total_slots):
                 if x != y:
-                    queue.append((x,y))
+                    queue.append((x, y))
         while len(queue):
             i, j = queue.popleft()
             if self.revise(i, j):
                 if len(self.variable_domains[0][i]) == 0 and len(self.variable_domains[1][i] == 0):
-                    print "!!!"
                     return False
                 # if revise removed all of the potential domain values for a nonbinary constraint
                 for d_i, c in enumerate(self.nonbinary_constraint_domains):
                     if len(c) == 0:
-                        print "FAILED CONSTRAINT IN AC3:", d_i
                         return False
                 for k in range(total_slots):
                     if k != j:
                         queue.append((k, i))
         return True
 
+    # backtracking search implementatino
     def backtrack(self):
         if self.validate():
             return self.assignment
         slot_index = self.select_unassigned()
         if self.get_cs_count(slot_index) >= self.params['max']:
             # if we've reached the limit of concentration classes, only select gen eds
-            print "NEED TO SELECT GEN ED"
             slot_domain = [sys.maxint]
 
         else:
@@ -282,7 +288,6 @@ class ScheduleGenerator():
                 elif (self.gened_classes[course]['gened'] == 'SW' or self.gened_classes[course]['gened'] == 'USW') and self.sw_usw:
                     slot_domain.remove(course)
 
-        print slot_domain
         cur_assignment = list(self.assignment)
         cur_domains = list(self.variable_domains)
         cur_nonbinary_domains = list(self.nonbinary_constraint_domains)
@@ -317,7 +322,7 @@ class ScheduleGenerator():
                     result = self.backtrack()
                     if result:
                         return result
-            # reset the GenEd fulfillment class variables
+            # reset the GenEd fulfillment class variables because we've reached a dead end
             cur_geneds_copy = list(cur_geneds)
             self.ai_cb = cur_geneds_copy[0]
             self.er = cur_geneds_copy[1]

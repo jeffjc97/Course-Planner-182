@@ -1,3 +1,7 @@
+#
+# main code implementing the CSP solving algorithm
+#
+
 import sys
 import random
 from Constraint import *

@@ -1,3 +1,7 @@
+#
+# code to interface with user and process user preferences
+#
+
 from Constraint import *
 from ScheduleGenerator import ScheduleGenerator
 import helpers
@@ -19,67 +23,67 @@ def valid_courses(course_list):
 # getting user preferences
 params = {}
 
-# print 'Do you need to take Math 1a? (Type Yes or No)'
-# math1a = raw_input().lower()
-# while math1a not in ['yes', 'no']:
-#     print 'Invalid input. Select from Yes or No'
-#     math1a = raw_input().lower()
-# params['math1a'] = 0 if math1a == 'no' else 1
-#
-# print 'Do you need to take Math 1b? (Type Yes or No)'
-# math1b = raw_input().lower()
-# while math1b not in ['yes', 'no']:
-#     print 'Invalid input. Select from Yes or No'
-#     math1b = raw_input().lower()
-# params['math1b'] = 0 if math1b == 'no' else 1
-#
-# print 'What math do you want to take for Multivariable Calculus? (Type Math21a, Math23b, Math25b, Math55b)'
-# params['multi'] = raw_input().upper()
-# while params['multi'] not in ['MATH21A', 'MATH23B', 'MATH25B', 'MATH55B']:
-#     print 'Invalid input. Select from Math21a, Math23b, Math25b, Math55b'
-#     params['multi'] = raw_input().upper()
-#
-# print 'What math do you want to take for Linear Algebra? (Type Math21b, Math23a, Math25a, Math55a)'
-# params['linalg'] = raw_input().upper()
-# while params['linalg'] not in ['MATH21B', 'MATH23A', 'MATH25A', 'MATH55A']:
-#     print 'Invalid input. Select from Math21b, Math23a, Math25a, or Math55a'
-#     params['linalg'] = raw_input().upper()
-#
-# print 'What semester to take expos? (Fall or Spring)'
-# expos = raw_input().lower()
-# while expos not in ['fall', 'spring']:
-#     print 'Invalid input. Select from Fall or Spring'
-#     expos = raw_input().lower()
-# params['expos'] = 0 if expos == 'fall' else 1
-#
-# print 'What is the maximum number of concentration courses you want to take per semester? (2, 3, 4)'
-# params['max'] = raw_input()
-# while params['max'] not in ['2', '3', '4']:
-#     print 'Invalid input. Select from 2, 3, or 4'
-#     params['max'] = raw_input()
-# params['max'] = int(params['max'])
-#
-# print 'What CS clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
-# params['preferred_classes'] = raw_input().upper().split()
-# while not valid_courses(params['preferred_classes']):
-#     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces.'
-#     params['preferred_classes'] = raw_input().upper().split()
-#
-# print 'What CS clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces.'
-# params['disliked_classes'] = raw_input().upper().split()
-# while not valid_courses(params['disliked_classes']) or len(set(params['preferred_classes']) & set(params['disliked_classes'])) != 0:
-#     print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces. These courses cannot overlap with your preferred courses.'
-#     params['disliked_classes'] = raw_input().upper().split()
+print 'Do you need to take Math 1a? (Type Yes or No)'
+math1a = raw_input().lower()
+while math1a not in ['yes', 'no']:
+    print 'Invalid input. Select from Yes or No'
+    math1a = raw_input().lower()
+params['math1a'] = 0 if math1a == 'no' else 1
+
+print 'Do you need to take Math 1b? (Type Yes or No)'
+math1b = raw_input().lower()
+while math1b not in ['yes', 'no']:
+    print 'Invalid input. Select from Yes or No'
+    math1b = raw_input().lower()
+params['math1b'] = 0 if math1b == 'no' else 1
+
+print 'What math do you want to take for Multivariable Calculus? (Type Math21a, Math23b, Math25b, Math55b)'
+params['multi'] = raw_input().upper()
+while params['multi'] not in ['MATH21A', 'MATH23B', 'MATH25B', 'MATH55B']:
+    print 'Invalid input. Select from Math21a, Math23b, Math25b, Math55b'
+    params['multi'] = raw_input().upper()
+
+print 'What math do you want to take for Linear Algebra? (Type Math21b, Math23a, Math25a, Math55a)'
+params['linalg'] = raw_input().upper()
+while params['linalg'] not in ['MATH21B', 'MATH23A', 'MATH25A', 'MATH55A']:
+    print 'Invalid input. Select from Math21b, Math23a, Math25a, or Math55a'
+    params['linalg'] = raw_input().upper()
+
+print 'What semester to take expos? (Fall or Spring)'
+expos = raw_input().lower()
+while expos not in ['fall', 'spring']:
+    print 'Invalid input. Select from Fall or Spring'
+    expos = raw_input().lower()
+params['expos'] = 0 if expos == 'fall' else 1
+
+print 'What is the maximum number of concentration courses you want to take per semester? (2, 3, 4)'
+params['max'] = raw_input()
+while params['max'] not in ['2', '3', '4']:
+    print 'Invalid input. Select from 2, 3, or 4'
+    params['max'] = raw_input()
+params['max'] = int(params['max'])
+
+print 'What CS clases do you want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+params['preferred_classes'] = raw_input().upper().split()
+while not valid_courses(params['preferred_classes']):
+    print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces.'
+    params['preferred_classes'] = raw_input().upper().split()
+
+print 'What CS clases do you not want to take? Answer by course name (e.g. "CS182") separated by spaces.'
+params['disliked_classes'] = raw_input().upper().split()
+while not valid_courses(params['disliked_classes']) or len(set(params['preferred_classes']) & set(params['disliked_classes'])) != 0:
+    print 'Invalid input. Answer by course name (e.g. "CS182") separated by spaces. These courses cannot overlap with your preferred courses.'
+    params['disliked_classes'] = raw_input().upper().split()
 
 # hardcoded input, for testing
-params['math1a'] = 0
-params['math1b'] = 1
-params['multi'] = 'MATH23B'
-params['linalg'] = 'MATH23A'
-params['expos'] = 0
-params['max'] = 3
-params['preferred_classes'] = ['CS161']
-params['disliked_classes'] = ['CS108']
+# params['math1a'] = 0
+# params['math1b'] = 1
+# params['multi'] = 'MATH23B'
+# params['linalg'] = 'MATH23A'
+# params['expos'] = 0
+# params['max'] = 3
+# params['preferred_classes'] = ['CS161']
+# params['disliked_classes'] = ['CS108']
 
 # GENERATE SCHEDULE!!
 sg = ScheduleGenerator(params, cs_class_dict, gened_class_dict, prereqs)

@@ -1,3 +1,7 @@
+#
+# general helper functions used throughout the code
+#
+
 import csv
 
 total_slots = 32

@@ -1,3 +1,7 @@
+#
+# classes and functions modelling binary constraints
+#
+
 import sys
 import helpers
 

@@ -119,8 +119,9 @@ class ScheduleGenerator():
 
         # prioritizing class preference
         lookup_dict = helpers.get_course_id_dict()
+        new_preferred = []
         for slot in self.variable_domains:
-            new_preferred = self.params['preferred_classes'] + [self.params['linalg']] + [self.params['multi']]
+            new_preferred += self.params['preferred_classes'] + [self.params['linalg']] + [self.params['multi']]
             for preference in new_preferred:
                 course = lookup_dict[preference]
                 if course in slot[0]:
@@ -131,6 +132,14 @@ class ScheduleGenerator():
                 if course in slot[0]:
                     slot[0].remove(course)
                     slot[0].append(course)
+            if self.params['math1a']:
+                for x in range(30, 34):
+                    slot[0].remove(x)
+                    slot[0].appendleft(x)
+            if self.params['math1b']:
+                for x in range(34,38):
+                    slot[0].remove(x)
+                    slot[0].appendleft(x)
 
     # checks to see if all constraints satisfied
     # if new_assignment given, check if that assignment's constraints are satisfied
@@ -151,7 +160,7 @@ class ScheduleGenerator():
         # now checking constraint domains for nonbinary
         for d_i, domain in enumerate(constraint_domains):
             if len(domain) == 0:
-                print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
+                # print "FAILED CONSTRAINT", d_i, "out of: ", len(constraint_domains)
                 return False
         return True
 

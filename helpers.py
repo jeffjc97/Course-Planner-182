@@ -402,10 +402,9 @@ def constraint_gen_ed_sp():
 # creating constraint domains
 # given a user's input of whether or not they need Math 1a, create constraint
 def constraint_math1a():
-    math1a_ids = []
     constraints = []
     # only freshman fall
-    for a in range(8):
+    for a in range(total_slots):
         for ci in range(30, 34):
             constraints.append({
                 a: ci
@@ -417,10 +416,8 @@ def constraint_math1a():
 # given a user's input of whether or not they need Math 1b, create constraint
 def constraint_math1b():
     constraints = []
-    math1a_ids = []
-    constraints = []
     # only freshman fall
-    for a in range(8):
+    for a in range(total_slots):
         for ci in range(34, 38):
             constraints.append({
                 a: ci
